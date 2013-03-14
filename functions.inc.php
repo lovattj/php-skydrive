@@ -8,8 +8,8 @@ A PHP client library for Microsoft SkyDrive.
 // Define security credentials for your app.
 // You can get these when you register your app on the Live Connect Developer Center.
 
-define("client_id", "your_client_id");
-define("client_secret", "your_client_secret");
+define("client_id", "your_client_id"); // Replace with your Client ID 
+define("client_secret", "your_client_secret"); // Replace with your Client Secret
 
 // *** Public Functions ***
 
