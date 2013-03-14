@@ -8,9 +8,9 @@ A PHP client library for Microsoft SkyDrive.
 // Define security credentials for your app.
 // You can get these when you register your app on the Live Connect Developer Center.
 
-define("client_id", "your-client-id");
-define("client_secret", "your-client-secret");
-define("callback_uri", "http://your-oauth-callback-url");
+define("client_id", "your_client_id");
+define("client_secret", "your_client_secret");
+define("callback_uri", "http://your_callback_url");
 
 // *** Public Functions ***
 
@@ -42,11 +42,11 @@ function get_oauth_token($auth) {
 // Or leave the second parameter blank for the root directory (/me/skydrive/files)
 // Returns an array of the contents of the folder.
 
-function get_folder($access_token, $folderid) {
+function get_folder($access_token, $folderid, $sort_by = 'name') {
 	if ($folderid === null) {
-		$response = json_decode(curl_get("https://apis.live.net/v5.0/me/skydrive/files?access_token=".$access_token), true);
+		$response = json_decode(curl_get("https://apis.live.net/v5.0/me/skydrive/files?sort_by=".$sort_by."&access_token=".$access_token), true);
 	} else {
-		$response = json_decode(curl_get("https://apis.live.net/v5.0/".$folderid."/files?access_token=".$access_token), true);
+		$response = json_decode(curl_get("https://apis.live.net/v5.0/".$folderid."/files?sort_by=".$sort_by."&access_token=".$access_token), true);
 	}
 	$arraytoreturn = Array();
 	foreach ($response as $subarray) {
@@ -66,14 +66,34 @@ function get_quota($access_token) {
 	return $response;
 }
 
+// Gets the properties of the file.
+// Pass in your oAuth token.
+// Returns an array of file properties.
+
+function get_file_properties($access_token, $fileid) {
+	$response = json_decode(curl_get("https://apis.live.net/v5.0/".$fileid."?access_token=".$access_token), true);
+	$arraytoreturn = Array('id' => $response['id'], 'name' => $response['name'], 'parent_id' => $response['parent_id'], 'size' => $response['size'], 'source' => $response['source'], 'created_time' => $response['created_time'], 'updated_time' => $response['updated_time'], 'link' => $response['link'], 'upload_location' => $response['upload_location']);
+	return $arraytoreturn;
+}
+
 // Gets a pre-signed (public) direct URL to the item
 // Pass in your oAuth token and a file ID
 // Returns a string containing the pre-signed URL.
 
 function get_source_link($access_token, $fileid) {
-	$response = json_decode(curl_get("https://apis.live.net/v5.0/".$fileid."?access_token=".$access_token), true);
+	$response = get_file_properties($access_token, $fileid);
 	return $response['source'];
 }
+
+// Gets a shared read link to the item.
+// This is different to the 'link' returned from get_file_properties in that it's pre-signed.
+// It's also a link to the file inside SkyDrive's interface rather than directly to the file data.
+
+function get_shared_read_link($access_token, $fileid) {
+	$response = json_decode(curl_get("https://apis.live.net/v5.0/".$fileid."/shared_read_link?access_token=".$access_token), true);
+	return $response['link'];
+}
+
 
 // *** Private Functions ***
 
