@@ -8,8 +8,9 @@ A PHP client library for Microsoft SkyDrive.
 // Define security credentials for your app.
 // You can get these when you register your app on the Live Connect Developer Center.
 
-define("client_id", "your_client_id"); // Replace with your Client ID 
-define("client_secret", "your_client_secret"); // Replace with your Client Secret
+define("client_id", "your-client-id");
+define("client_secret", "your-client-secret");
+define("callback_uri", "http://your-oauth-callback-url");
 
 // *** Public Functions ***
 
@@ -28,7 +29,7 @@ function get_oauth_token($auth) {
 		));
 	curl_setopt($ch, CURLOPT_POST, TRUE);
 
-	$data = "client_id=".client_id."&redirect_uri=http%3A%2F%2Fjlls.info%2Fskydrive%2Fcallback.php&client_secret=".urlencode(client_secret)."&code=".$auth."&grant_type=authorization_code";	
+	$data = "client_id=".client_id."&redirect_uri=".urlencode(callback_uri)."&client_secret=".urlencode(client_secret)."&code=".$auth."&grant_type=authorization_code";	
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     $output = curl_exec($ch);
   } catch (Exception $e) {
@@ -63,6 +64,15 @@ function get_folder($access_token, $folderid) {
 function get_quota($access_token) {
 	$response = json_decode(curl_get("https://apis.live.net/v5.0/me/skydrive/quota?access_token=".$access_token), true);
 	return $response;
+}
+
+// Gets a pre-signed (public) direct URL to the item
+// Pass in your oAuth token and a file ID
+// Returns a string containing the pre-signed URL.
+
+function get_source_link($access_token, $fileid) {
+	$response = json_decode(curl_get("https://apis.live.net/v5.0/".$fileid."?access_token=".$access_token), true);
+	return $response['source'];
 }
 
 // *** Private Functions ***
