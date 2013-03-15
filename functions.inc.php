@@ -10,7 +10,7 @@ A PHP client library for Microsoft SkyDrive.
 
 define("client_id", "your_client_id");
 define("client_secret", "your_client_secret");
-define("callback_uri", "http://your_callback_url");
+define("callback_uri", "your_callback_url");
 
 // *** Public Functions ***
 
@@ -72,7 +72,7 @@ function get_quota($access_token) {
 
 function get_file_properties($access_token, $fileid) {
 	$response = json_decode(curl_get("https://apis.live.net/v5.0/".$fileid."?access_token=".$access_token), true);
-	$arraytoreturn = Array('id' => $response['id'], 'name' => $response['name'], 'parent_id' => $response['parent_id'], 'size' => $response['size'], 'source' => $response['source'], 'created_time' => $response['created_time'], 'updated_time' => $response['updated_time'], 'link' => $response['link'], 'upload_location' => $response['upload_location']);
+	$arraytoreturn = Array('id' => $response['id'], 'name' => $response['name'], 'parent_id' => $response['parent_id'], 'size' => $response['size'], 'source' => $response['source'], 'created_time' => $response['created_time'], 'updated_time' => $response['updated_time'], 'link' => $response['link'], 'upload_location' => $response['upload_location'], 'is_embeddable' => $response['is_embeddable']);
 	return $arraytoreturn;
 }
 
@@ -91,6 +91,13 @@ function get_source_link($access_token, $fileid) {
 
 function get_shared_read_link($access_token, $fileid) {
 	$response = json_decode(curl_get("https://apis.live.net/v5.0/".$fileid."/shared_read_link?access_token=".$access_token), true);
+	return $response['link'];
+}
+
+// Gets a shared edit (read-write) link to the item.
+
+function get_shared_edit_link($access_token, $fileid) {
+	$response = json_decode(curl_get("https://apis.live.net/v5.0/".$fileid."/shared_edit_link?access_token=".$access_token), true);
 	return $response['link'];
 }
 
