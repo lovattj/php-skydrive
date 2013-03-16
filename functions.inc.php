@@ -25,6 +25,11 @@ define("client_id", "your_client_id");
 define("client_secret", "your_client_secret");
 define("callback_uri", "your_callback_url");
 
+// Globals
+
+$lastresponsecode = '';
+global $lastresponsecode;
+
 // *** Public Functions ***
 
 // Obtains an oAuth token
@@ -55,11 +60,11 @@ function get_oauth_token($auth) {
 // Or leave the second parameter blank for the root directory (/me/skydrive/files)
 // Returns an array of the contents of the folder.
 
-function get_folder($access_token, $folderid, $sort_by = 'name') {
+function get_folder($access_token, $folderid, $sort_by='name', $sort_order='ascending', $limit='255') {
 	if ($folderid === null) {
-		$response = json_decode(curl_get("https://apis.live.net/v5.0/me/skydrive/files?sort_by=".$sort_by."&access_token=".$access_token), true);
+		$response = json_decode(curl_get("https://apis.live.net/v5.0/me/skydrive/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$access_token), true);
 	} else {
-		$response = json_decode(curl_get("https://apis.live.net/v5.0/".$folderid."/files?sort_by=".$sort_by."&access_token=".$access_token), true);
+		$response = json_decode(curl_get("https://apis.live.net/v5.0/".$folderid."/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$access_token), true);
 	}
 	$arraytoreturn = Array();
 	foreach ($response as $subarray) {
@@ -141,14 +146,16 @@ function curl_get($uri) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 	curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
-
     $output = curl_exec($ch);
+	$GLOBALS['lastresponsecode'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
   } catch (Exception $e) {
   }
   return $output;
 }
 
 // Internally used function to make a DELETE request to SkyDrive.
+
 function curl_delete($uri) {
   $output = "";
   try {
@@ -161,8 +168,8 @@ function curl_delete($uri) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 	curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
-
     $output = curl_exec($ch);
+	$GLOBALS['lastresponsecode'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);    
   } catch (Exception $e) {
   }
 	return $output;
