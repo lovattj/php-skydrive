@@ -114,6 +114,17 @@ function get_shared_edit_link($access_token, $fileid) {
 	return $response['link'];
 }
 
+// Deletes an object.
+
+function delete_object($access_token, $fileid) {
+	$response = json_decode(curl_delete("https://apis.live.net/v5.0/".$fileid."?access_token=".$access_token), true);
+	if (@array_key_exists('error', $response)) {
+		return false;
+	} else {
+		return true;
+	}
+}
+
 
 // *** Private Functions ***
 
@@ -136,6 +147,27 @@ function curl_get($uri) {
   }
   return $output;
 }
+
+// Internally used function to make a DELETE request to SkyDrive.
+function curl_delete($uri) {
+  $output = "";
+  try {
+    $ch = curl_init($uri);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');    
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+	curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
+
+    $output = curl_exec($ch);
+  } catch (Exception $e) {
+  }
+	return $output;
+}
+
 
 
 ?>
