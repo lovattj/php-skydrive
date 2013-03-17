@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 define("client_id", "your_client_id");
 define("client_secret", "your_client_secret");
 define("callback_uri", "your_callback_url");
+define("skydrive_base_url", "https://apis.live.net/v5.0/");
 
 // Globals
 
@@ -32,9 +33,18 @@ global $lastresponsecode;
 
 // *** Public Functions ***
 
+// Builds a URL for the user to log in to SkyDrive and get the authorization code, which can then be
+// passed onto get_oauth_token to get a valid oAuth token.
+
+function build_oauth_url() {
+	$response = "https://login.live.com/oauth20_authorize.srf?client_id=".client_id."&scope=wl.signin%20wl.skydrive_update%20wl.basic&response_type=code&redirect_uri=".urlencode(callback_uri);
+	return $response;
+}
+
 // Obtains an oAuth token
 // Pass in the authorization code parameter obtained from the inital callback.
 // Returns the oAuth token and properties (you'll need to JSON-decode and get the token 'access_token' from the response).
+
 
 function get_oauth_token($auth) {
   $output = "";
@@ -62,9 +72,9 @@ function get_oauth_token($auth) {
 
 function get_folder($access_token, $folderid, $sort_by='name', $sort_order='ascending', $limit='255') {
 	if ($folderid === null) {
-		$response = json_decode(curl_get("https://apis.live.net/v5.0/me/skydrive/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$access_token), true);
+		$response = json_decode(curl_get(skydrive_base_url."me/skydrive/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$access_token), true);
 	} else {
-		$response = json_decode(curl_get("https://apis.live.net/v5.0/".$folderid."/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$access_token), true);
+		$response = json_decode(curl_get(skydrive_base_url.$folderid."/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$access_token), true);
 	}
 	$arraytoreturn = Array();
 	foreach ($response as $subarray) {
@@ -80,8 +90,24 @@ function get_folder($access_token, $folderid, $sort_by='name', $sort_order='asce
 // Returns an array containing your total quota and quota available.
 
 function get_quota($access_token) {
-	$response = json_decode(curl_get("https://apis.live.net/v5.0/me/skydrive/quota?access_token=".$access_token), true);
+	$response = json_decode(curl_get(skydrive_base_url."me/skydrive/quota?access_token=".$access_token), true);
 	return $response;
+}
+
+// Gets the properties of the folder.
+// Pass in your oAuth token.
+// Returns an array of folder properties.
+// You can pass null as $folderid to get the properties of your root SkyDrive folder.
+
+function get_folder_properties($access_token, $folderid) {
+	$arraytoreturn = Array();
+	if ($folderid === null) {
+		$response = json_decode(curl_get(skydrive_base_url."/me/skydrive?access_token=".$access_token), true);
+	} else {
+		$response = json_decode(curl_get(skydrive_base_url.$folderid."?access_token=".$access_token), true);
+	}
+	@$arraytoreturn = Array('id' => $response['id'], 'name' => $response['name'], 'parent_id' => $response['parent_id'], 'size' => $response['size'], 'source' => $response['source'], 'created_time' => $response['created_time'], 'updated_time' => $response['updated_time'], 'link' => $response['link'], 'upload_location' => $response['upload_location'], 'is_embeddable' => $response['is_embeddable'], 'count' => $response['count']);
+	return $arraytoreturn;
 }
 
 // Gets the properties of the file.
@@ -89,7 +115,7 @@ function get_quota($access_token) {
 // Returns an array of file properties.
 
 function get_file_properties($access_token, $fileid) {
-	$response = json_decode(curl_get("https://apis.live.net/v5.0/".$fileid."?access_token=".$access_token), true);
+	$response = json_decode(curl_get(skydrive_base_url.$fileid."?access_token=".$access_token), true);
 	$arraytoreturn = Array('id' => $response['id'], 'name' => $response['name'], 'parent_id' => $response['parent_id'], 'size' => $response['size'], 'source' => $response['source'], 'created_time' => $response['created_time'], 'updated_time' => $response['updated_time'], 'link' => $response['link'], 'upload_location' => $response['upload_location'], 'is_embeddable' => $response['is_embeddable']);
 	return $arraytoreturn;
 }
@@ -108,21 +134,21 @@ function get_source_link($access_token, $fileid) {
 // It's also a link to the file inside SkyDrive's interface rather than directly to the file data.
 
 function get_shared_read_link($access_token, $fileid) {
-	$response = json_decode(curl_get("https://apis.live.net/v5.0/".$fileid."/shared_read_link?access_token=".$access_token), true);
+	$response = json_decode(curl_get(skydrive_base_url.$fileid."/shared_read_link?access_token=".$access_token), true);
 	return $response['link'];
 }
 
 // Gets a shared edit (read-write) link to the item.
 
 function get_shared_edit_link($access_token, $fileid) {
-	$response = json_decode(curl_get("https://apis.live.net/v5.0/".$fileid."/shared_edit_link?access_token=".$access_token), true);
+	$response = json_decode(curl_get(skydrive_base_url.$fileid."/shared_edit_link?access_token=".$access_token), true);
 	return $response['link'];
 }
 
 // Deletes an object.
 
 function delete_object($access_token, $fileid) {
-	$response = json_decode(curl_delete("https://apis.live.net/v5.0/".$fileid."?access_token=".$access_token), true);
+	$response = json_decode(curl_delete(skydrive_base_url.$fileid."?access_token=".$access_token), true);
 	if (@array_key_exists('error', $response)) {
 		return false;
 	} else {
