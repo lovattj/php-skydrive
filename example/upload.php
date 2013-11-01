@@ -11,7 +11,7 @@ if (!isset($_SESSION['access_token'])) {
 
 	$sd = new skydrive($_SESSION['access_token']);
 	try {
-		$response = $sd->put_file($_GET['folderid'], '/home/jl/style.css');
+		$response = $sd->put_file($_GET['folderid'], $_GET['filepath']);
 		// File was uploaded, return metadata.
 		print_r($response);
 	} catch (Exception $e) {
