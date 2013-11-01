@@ -13,6 +13,17 @@ Update 1-Nov-2013:
 - Once you have an access token, create a new object - $sd = new skydrive($access_token).
 - Then call the specified method - $response = $sd->get_folder();
 - Exceptions will be thrown when a non-200 HTTP status code is encountered.
+- I'll update the Wiki with new class documentation. Thanks!
 
-I'll update the Wiki with new class documentation.
-Thanks!
+System Requirements:
+- PHP 5 (I tested with 5.3.3)
+- cURL extension for PHP
+
+How to install:
+- Clone project
+- Edit "functions.inc.php" and include your Live Client ID, Secret Key and oAuth callback URL in relevant places.
+- Start calling functions!
+- A very basic test example is included.
+
+Questions/Comments:
+- E-Mail me at php-skydrive@jlls.info
