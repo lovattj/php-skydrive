@@ -1,21 +1,31 @@
 <?php
 @session_start();
+require_once "functions.inc.php";
 require_once "header.inc.php";
-require_once "../functions.inc.php";
+
 if (!isset($_SESSION['access_token'])) {
 	echo "<div>";
 	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-	echo "<span style='vertical-align: middle;'><a href='".build_oauth_url()."'>Login with SkyDrive</a></span>";
+	echo "<span style='vertical-align: middle;'><a href='".skydrive_auth::build_oauth_url()."'>Login with SkyDrive</a></span>";
 	echo "</div>";
 } else {
+	echo "<p><b>Debug Information</b><br>Access token expires at: ".$_SESSION['access_token_expires'].".<br>";
+	
+	$sd2 = new skydrive($_SESSION['access_token']);
+	$quotaresp = $sd2->get_quota();
+	echo "Quota remaining: ".round((((int)$quotaresp['available']/1024)/1024))." Mbytes.</p>";
+	
+	$sd = new skydrive($_SESSION['access_token']);
 	if (empty($_GET['folderid'])) {
-		$response = get_folder($_SESSION['access_token'], null);	// Get the root folder.
-		$properties = get_folder_properties($_SESSION['access_token'], null);
+		$response = $sd->get_folder(null);	// Get the root folder.
+		$properties = $sd->get_folder_properties(null);
 	} else {
-		$response = get_folder($_SESSION['access_token'], $_GET['folderid']); // Get the specified folder.
-		$properties = get_folder_properties($_SESSION['access_token'], $_GET['folderid']);
+		$response = $sd->get_folder($_GET['folderid']); // Get the specified folder.
+		$properties = $sd->get_folder_properties($_GET['folderid']);
+		
 	}
-	echo "<div id='bodyheader'><b>".$properties['name']."</b><br>";
+	
+	echo "<p><div id='bodyheader'><b>".$properties['name']."</b><br>";
 	if (! empty($properties['parent_id'])) {
 		echo "<a href='index.php?folderid=".$properties['parent_id']."'>Up to parent folder</a>";
 	}
@@ -36,7 +46,6 @@ if (!isset($_SESSION['access_token'])) {
 	}
 
 echo "<a href='logout.php'>Log Out</a>";
-
 	
 }
 require_once "footer.inc.php";

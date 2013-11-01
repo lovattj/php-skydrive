@@ -28,7 +28,7 @@
 </head>
 <body>
 <div id="headerBar">
-	<div id="whiteText">php-skydrive demo</div>
+	<div id="whiteText">&nbsp;php-skydrive demo</div>
 </div>
 <br>
 
