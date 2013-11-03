@@ -1,5 +1,4 @@
 <?php
-date_default_timezone_set("Europe/London");
 
 /**********************************************************
 php-skydrive.
@@ -62,7 +61,7 @@ class skydrive {
 	}
 
 	// Gets the remaining quota of your SkyDrive account.
-	// Returns an array containing your total quota and quota available.
+	// Returns an array containing your total quota and quota available in bytes.
 
 	function get_quota() {
 		$response = $this->curl_get(skydrive_base_url."me/skydrive/quota?access_token=".$this->access_token);
@@ -153,10 +152,11 @@ class skydrive {
 
 	function delete_object($fileid) {
 		$response = curl_delete(skydrive_base_url.$fileid."?access_token=".$this->access_token);
-		if ($response[0] == "200") {
-			return true;
+		if (@array_key_exists('error', $response)) {
+			throw new Exception($response['error']." - ".$response['description']);
+			exit;
 		} else {
-			throw new Exception('HTTP status code not expcted - got'.$response[0]);
+			return true;
 		}
 	}
 	
@@ -166,11 +166,11 @@ class skydrive {
 	function put_file($folderid, $filename) {
 		$r2s = skydrive_base_url.$folderid."/files/".basename($filename)."?access_token=".$this->access_token;
 		$response = $this->curl_put($r2s, $filename);
-		if ($response[0] == "200") {
-			return $response;
-		} else {
-			throw new Exception('HTTP status code not expected - got '.$response[0]);
+		if (@array_key_exists('error', $response)) {
+			throw new Exception($response['error']." - ".$response['description']);
 			exit;
+		} else {
+			return $response;
 		}
 			
 	}
@@ -211,8 +211,12 @@ class skydrive {
 		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	  } catch (Exception $e) {
 	  }
-		$decoded = json_decode($output, true);
-		return array($httpcode, $decoded);
+	  	if ($httpcode == "200") {
+	  		return json_decode($output, true);
+	  	} else {
+	  		return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
+	  	}
+		
 	}
 
 	// Internally used function to make a DELETE request to SkyDrive.
@@ -233,8 +237,11 @@ class skydrive {
 		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	  } catch (Exception $e) {
 	  }
-	  	$decoded = json_decode($output, true);
-	  	return array($httpcode, $decoded);
+	  	if ($httpcode == "200") {
+	  		return json_decode($output, true);
+	  	} else {
+	  		return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
+	  	}
 	}
 	
 
@@ -253,8 +260,7 @@ class skydrive_auth {
 
 	// Obtains an oAuth token
 	// Pass in the authorization code parameter obtained from the inital callback.
-	// Returns the oAuth token and properties (you'll need to JSON-decode and get the token 'access_token' from the response).
-
+	// Returns the oAuth token and an expiry time in seconds from now (usually 3600 but may vary in future).
 
 	public static function get_oauth_token($auth) {
 		$arraytoreturn = array();
