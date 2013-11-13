@@ -21,9 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Define security credentials for your app.
 // You can get these when you register your app on the Live Connect Developer Center.
 
-define("client_id", "YOUR CLIENT ID");
-define("client_secret", "YOUR CLIENT SECRET");
-define("callback_uri", "YOUR CALLBACK URL");
+define("client_id", "YOUR LIVE CLIENT ID");
+define("client_secret", "YOUR LIVE CLIENT SECRET");
+define("callback_uri", "YOUR LIVE CALLBACK URL");
 define("skydrive_base_url", "https://apis.live.net/v5.0/");
 
 class skydrive {
@@ -183,7 +183,7 @@ class skydrive {
 		if ($http_response_header[0] == "HTTP/1.1 200 OK") {
 			return json_decode($output, true);
 		} else {
-			return Array('error' => 'HTTP status code not expected - got ', 'description' => $http_response_header[0]);
+			return Array('error' => 'HTTP status code not expected - got ', 'description' => substr($http_response_header[0],9,3));
 		}
 	}
 
@@ -249,6 +249,27 @@ class skydrive {
 
 class skydrive_auth {
 
+	// A utility function to verify the validity of an oAuth token. Pass in an oAuth token.
+	// Returns true or false.
+
+	public static function is_oauth_token_valid($access_token) {
+			$sdcheck = new skydrive($access_token);
+			try {
+				$response = $sdcheck->get_quota();
+				if(array_key_exists('available', $response)) {
+					return true;
+				} else {
+					return false;
+				}
+			} catch (Exception $e) {
+				$theerr = $e->getMessage();
+				if (substr($theerr,-3) == "401") {
+					return false;
+				}
+			}
+		
+	}
+	
 	// Builds a URL for the user to log in to SkyDrive and get the authorization code, which can then be
 	// passed onto get_oauth_token to get a valid oAuth token.
 
