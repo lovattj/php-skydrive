@@ -38,10 +38,10 @@ if (!isset($_SESSION['access_token'])) {
 		echo "<div>";
 		if ($item['type'] == 'folder' || $item['type'] =='album') {
 			echo "<img src='statics/folder-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-			echo "<span style='vertical-align: middle;'><a href='index.php?folderid=".$item['id']."'>".$item['name']."</a></span>";
+			echo "<span style='vertical-align: middle;'><a title='Open folder' href='index.php?folderid=".$item['id']."'>".$item['name']."</a></span>";
 		} else {
 			echo "<img src='statics/".$item['type']."-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-			echo "<span style='vertical-align: middle;'><a href='view.php?fileid=".$item['id']."' target='_blank'>".$item['name']."</a><br>";
+			echo "<span style='vertical-align: middle;'><a title='Download' href='download.php?fileid=".$item['id']."'>".$item['name']."</a><br>";
 			echo "<a href='properties.php?fileid=".$item['id']."'>Properties</a></span>";
 		}
 		echo "</div>";

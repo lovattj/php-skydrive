@@ -121,7 +121,8 @@ class skydrive {
 			return $response['source'];
 		}
 	}
-
+	
+	
 	// Gets a shared read link to the item.
 	// This is different to the 'link' returned from get_file_properties in that it's pre-signed.
 	// It's also a link to the file inside SkyDrive's interface rather than directly to the file data.
@@ -160,8 +161,28 @@ class skydrive {
 		}
 	}
 	
+	// Downloads a file from SkyDrive to the server.
+	// Pass in a file ID.
+	// Returns a multidimensional array:
+	// ['properties'] contains the file metadata and ['data'] contains the raw file data.
+	
+	public function download($fileid) {
+		$props = $this->get_file_properties($fileid);
+		$response = $this->curl_get(skydrive_base_url.$fileid."/content?access_token=".$this->access_token, "false", "HTTP/1.1 302 Found");
+		$arraytoreturn = Array();
+		if (@array_key_exists('error', $response)) {
+			throw new Exception($response['error']." - ".$response['description']);
+			exit;
+		} else {
+			array_push($arraytoreturn, Array('properties' => $props, 'data' => $response));
+			return $arraytoreturn;
+		}		
+	}
+
+	
 	// Uploads a file from disk.
 	// Pass the $folderid of the folder you want to send the file to, and the $filename path to the file.
+	// Also use this function for modifying files, it will overwrite a currently existing file.
 
 	function put_file($folderid, $filename) {
 		$r2s = skydrive_base_url.$folderid."/files/".basename($filename)."?access_token=".$this->access_token;
@@ -175,6 +196,11 @@ class skydrive {
 			
 	}
 	
+	// Creates a folder.
+	// Pass $folderid as the containing folder (or 'null' to create the folder under the root).
+	// Also pass $foldername as the name for the new folder and $description as the description.
+	// Returns the new folder metadata or throws an exception.
+	
 	function create_folder($folderid, $foldername, $description="") {
 		if ($folderid===null) {
 			$r2s = skydrive_base_url."me/skydrive";
@@ -184,22 +210,30 @@ class skydrive {
 		$arraytosend = array('name' => $foldername, 'description' => $description);	
 		$response = $this->curl_post($r2s, $arraytosend, $this->access_token);
 		if (@array_key_exists('error', $response)) {
-					throw new Exception($response['error']." - ".$response['description']);
-					exit;
-				} else {		
-					$arraytoreturn = Array();
-					array_push($arraytoreturn, Array('name' => $response['name'], 'id' => $response['id']));					
-					return $arraytoreturn;
-				}
+				throw new Exception($response['error']." - ".$response['description']);
+				exit;
+			} else {		
+				$arraytoreturn = Array();
+				array_push($arraytoreturn, Array('name' => $response['name'], 'id' => $response['id']));					
+				return $arraytoreturn;
+			}
 	}
 	
-	// Internally used function to make a GET request to SkyDrive and JSON-decode the result.
+	// *** PROTECTED FUNCTIONS ***
 	
-	protected function curl_get($uri) {
+	// Internally used function to make a GET request to SkyDrive.
+	// Functions can override the default JSON-decoding and return just the plain result.
+	// They can also override the expected HTTP status code too.
+	
+	protected function curl_get($uri, $json_decode_output="true", $expected_status_code="HTTP/1.1 200 OK") {
 		$output = "";
 		$output = @file_get_contents($uri);
-		if ($http_response_header[0] == "HTTP/1.1 200 OK") {
-			return json_decode($output, true);
+		if ($http_response_header[0] == $expected_status_code) {
+			if ($json_decode_output == "true") {
+				return json_decode($output, true);
+			} else {
+				return $output;
+			}
 		} else {
 			return Array('error' => 'HTTP status code not expected - got ', 'description' => substr($http_response_header[0],9,3));
 		}
