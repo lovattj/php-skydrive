@@ -175,6 +175,24 @@ class skydrive {
 			
 	}
 	
+	function create_folder($folderid, $foldername, $description="") {
+		if ($folderid===null) {
+			$r2s = skydrive_base_url."me/skydrive";
+		} else {
+			$r2s = skydrive_base_url.$folderid;
+		}
+		$arraytosend = array('name' => $foldername, 'description' => $description);	
+		$response = $this->curl_post($r2s, $arraytosend, $this->access_token);
+		if (@array_key_exists('error', $response)) {
+					throw new Exception($response['error']." - ".$response['description']);
+					exit;
+				} else {		
+					$arraytoreturn = Array();
+					array_push($arraytoreturn, Array('name' => $response['name'], 'id' => $response['id']));					
+					return $arraytoreturn;
+				}
+	}
+	
 	// Internally used function to make a GET request to SkyDrive and JSON-decode the result.
 	
 	protected function curl_get($uri) {
@@ -184,6 +202,29 @@ class skydrive {
 			return json_decode($output, true);
 		} else {
 			return Array('error' => 'HTTP status code not expected - got ', 'description' => substr($http_response_header[0],9,3));
+		}
+	}
+
+	protected function curl_post($uri, $inputarray, $access_token) {
+		$trimmed = json_encode($inputarray);
+		try {
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $uri);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);	
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			'Content-Type: application/json',
+			'Authorization: Bearer '.$access_token,
+		));
+		curl_setopt($ch, CURLOPT_POST, TRUE);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $trimmed);
+		$output = curl_exec($ch);
+		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		} catch (Exception $e) {
+		}
+		if ($httpcode == "201") {
+			return json_decode($output, true);
+		} else {
+			return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
 		}
 	}
 

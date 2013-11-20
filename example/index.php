@@ -14,6 +14,9 @@ if (!isset($_SESSION['access_token'])) {
 	$sd2 = new skydrive($_SESSION['access_token']);
 	$quotaresp = $sd2->get_quota();
 	echo "Quota remaining: ".round((((int)$quotaresp['available']/1024)/1024))." Mbytes.</p>";
+	echo "<p><b>Create folder here:<br>";
+	echo "<form method='post' action='createfolder.php'><input type='hidden' name='currentfolderid' value='".@$_GET['folderid']."'><input type='text' name='foldername' placeholder='Folder Name'>&nbsp;<input type='submit' name='submit' value='submit'></form>";
+	echo "</p>";
 	
 	$sd = new skydrive($_SESSION['access_token']);
 	if (empty($_GET['folderid'])) {
