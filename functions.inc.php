@@ -369,6 +369,7 @@ class skydrive_auth {
 				'Content-Type: application/x-www-form-urlencoded',
 				));
 			curl_setopt($ch, CURLOPT_POST, TRUE);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);		
 
 			$data = "client_id=".client_id."&redirect_uri=".urlencode(callback_uri)."&client_secret=".urlencode(client_secret)."&code=".$auth."&grant_type=authorization_code";	
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
