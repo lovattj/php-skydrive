@@ -31,5 +31,11 @@ How to install:
 - Start calling functions!
 - A very basic test example is included.
 
+How to get the example running:
+- Deploy to your web server
+- Make sure the file "example/tokens" is read+writable by your web user.
+- Edit "functions.inc.php" and include your Live Client ID, Secret Key and oAuth callback URL in relevant places.
+- Hit "example/index.php" and follow the prompts to login with SkyDrive!
+
 Questions/Comments:
 - E-Mail me at php-skydrive@jlls.info
