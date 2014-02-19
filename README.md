@@ -1,9 +1,15 @@
 php-skydrive
 ============
 
-A PHP client library for Microsoft SkyDrive.
+A PHP client library for Microsoft SkyDrive/OneDrive.
 This is very much a work in progress!
 See the Wiki for updates and documentation!
+
+Update 19-Feb-2014:
+- Added support for refresh tokens.
+- You can now build apps that don't require re-authentication every 60 minutes.
+- Also implemented functions to help you build a token store.
+- See the Wiki for more information - there are some major changes.
 
 Update 1-Nov-2013:
 - Converted into a Class
