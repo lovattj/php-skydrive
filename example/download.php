@@ -1,10 +1,11 @@
 <?php
-@session_start();
-require_once "functions.inc.php";
-if (!isset($_SESSION['access_token'])) {
+require_once "../functions.inc.php";
+$token = skydrive_auth::acquire_token();
+
+if (!$token) {
 	echo "Error";
 } else {
-	$sd = new skydrive($_SESSION['access_token']);
+	$sd = new skydrive($token);
 	try {
 		$response = $sd->download($_GET['fileid']);
 		ob_end_clean();  
@@ -19,7 +20,6 @@ if (!isset($_SESSION['access_token'])) {
 		echo "Error: ".$e->getMessage();
 		exit;
 	}
-
 }
 require_once "footer.inc.php";
 ?>

@@ -1,24 +1,34 @@
 <?php
-@session_start();
-require_once "functions.inc.php";
+
+// index.php
+
+// This is an example page that will display the contents of a given SkyDrive folder.
+// If an access_token is not available, it'll direct the user to login with SkyDrive.
+
+require_once "../functions.inc.php";
 require_once "header.inc.php";
 
-if (!isset($_SESSION['access_token'])) {
+// Try and get a valid access_token from the token store.
+
+$token = skydrive_auth::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
+
+if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_url() to get the redirect URL.
 	echo "<div>";
 	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
 	echo "<span style='vertical-align: middle;'><a href='".skydrive_auth::build_oauth_url()."'>Login with SkyDrive</a></span>";
 	echo "</div>";
-} else {
-	echo "<p><b>Debug Information</b><br>Access token expires at: ".$_SESSION['access_token_expires'].".<br>";
 	
-	$sd2 = new skydrive($_SESSION['access_token']);
+} else { // Otherwise, if we have a token, use it to create an object and start calling methods to build our page.
+	
+	$sd2 = new skydrive($token);
 	$quotaresp = $sd2->get_quota();
+	
 	echo "Quota remaining: ".round((((int)$quotaresp['available']/1024)/1024))." Mbytes.</p>";
 	echo "<p><b>Create folder here:<br>";
 	echo "<form method='post' action='createfolder.php'><input type='hidden' name='currentfolderid' value='".@$_GET['folderid']."'><input type='text' name='foldername' placeholder='Folder Name'>&nbsp;<input type='submit' name='submit' value='submit'></form>";
 	echo "</p>";
 	
-	$sd = new skydrive($_SESSION['access_token']);
+	$sd = new skydrive($token);
 	if (empty($_GET['folderid'])) {
 		$response = $sd->get_folder(null);	// Get the root folder.
 		$properties = $sd->get_folder_properties(null);

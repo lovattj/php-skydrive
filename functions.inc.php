@@ -21,10 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Define security credentials for your app.
 // You can get these when you register your app on the Live Connect Developer Center.
 
-define("client_id", "YOUR LIVE CLIENT ID");
-define("client_secret", "YOUR LIVE CLIENT SECRET");
-define("callback_uri", "YOUR LIVE CALLBACK URL");
+define("client_id", "000000004C0E36AA");
+define("client_secret", "LIP3CPWlxeObnnU3Gvud2dfYUSzHALI-");
+define("callback_uri", "http://jlls.info/skydrive-jon/callback.php");
 define("skydrive_base_url", "https://apis.live.net/v5.0/");
+define("token_store", "tokens");
 
 class skydrive {
 
@@ -239,6 +240,8 @@ class skydrive {
 		}
 	}
 
+	// Internally used function to make a POST request to SkyDrive.
+
 	protected function curl_post($uri, $inputarray, $access_token) {
 		$trimmed = json_encode($inputarray);
 		try {
@@ -324,35 +327,18 @@ class skydrive {
 
 class skydrive_auth {
 
-	// A utility function to verify the validity of an oAuth token. Pass in an oAuth token.
-	// Returns true or false.
-
-	public static function is_oauth_token_valid($access_token) {
-			$sdcheck = new skydrive($access_token);
-			try {
-				$response = $sdcheck->get_quota();
-				if(array_key_exists('available', $response)) {
-					return true;
-				} else {
-					return false;
-				}
-			} catch (Exception $e) {
-				$theerr = $e->getMessage();
-				if (substr($theerr,-3) == "401") {
-					return false;
-				}
-			}
-		
-	}
+	// build_oauth_url()
 	
 	// Builds a URL for the user to log in to SkyDrive and get the authorization code, which can then be
 	// passed onto get_oauth_token to get a valid oAuth token.
 
 	public static function build_oauth_url() {
-		$response = "https://login.live.com/oauth20_authorize.srf?client_id=".client_id."&scope=wl.signin%20wl.skydrive_update%20wl.basic&response_type=code&redirect_uri=".urlencode(callback_uri);
+		$response = "https://login.live.com/oauth20_authorize.srf?client_id=".client_id."&scope=wl.signin%20wl.offline_access%20wl.skydrive_update%20wl.basic&response_type=code&redirect_uri=".urlencode(callback_uri);
 		return $response;
 	}
 
+
+	// get_oauth_token()
 
 	// Obtains an oAuth token
 	// Pass in the authorization code parameter obtained from the inital callback.
@@ -378,10 +364,110 @@ class skydrive_auth {
 		}
 	
 		$out2 = json_decode($output, true);
-		$arraytoreturn = Array('access_token' => $out2['access_token'], 'expires_in' => $out2['expires_in']);
+		$arraytoreturn = Array('access_token' => $out2['access_token'], 'refresh_token' => $out2['refresh_token'], 'expires_in' => $out2['expires_in']);
 		return $arraytoreturn;
 	}
+	
+	
+	// refresh_oauth_token()
+	
+	// Attempts to refresh an oAuth token
+	// Pass in the refresh token obtained from a previous oAuth request.
+	// Returns the new oAuth token and an expiry time in seconds from now (usually 3600 but may vary in future).
+		
+	public static function refresh_oauth_token($refresh) {
+		$arraytoreturn = array();
+		$output = "";
+		try {
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, "https://login.live.com/oauth20_token.srf");
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);	
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+				'Content-Type: application/x-www-form-urlencoded',
+				));
+			curl_setopt($ch, CURLOPT_POST, TRUE);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);		
+
+			$data = "client_id=".client_id."&redirect_uri=".urlencode(callback_uri)."&client_secret=".urlencode(client_secret)."&refresh_token=".$refresh."&grant_type=refresh_token";	
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			$output = curl_exec($ch);
+		} catch (Exception $e) {
+		}
+	
+		$out2 = json_decode($output, true);
+		$arraytoreturn = Array('access_token' => $out2['access_token'], 'refresh_token' => $out2['refresh_token'], 'expires_in' => $out2['expires_in']);
+		return $arraytoreturn;
+	}
+	
+	
+	// acquire_token()
+	
+	// Will attempt to grab an access_token from the current token store.
+	// If there isn't one then return false to indicate user needs sending through oAuth procedure.
+	// If there is one but it's expired attempt to refresh it, save the new tokens and return an access_token.
+	// If there is one and it's valid then return an access_token.
+	
+	
+	public static function acquire_token() {
+		
+		$response = skydrive_auth::get_tokens_from_store();
+		if (empty($response['access_token'])) {	// No token at all, needs to go through login flow. Return false to indicate this.
+			return false;
+			exit;
+		} else {
+			if (time() > (int)$response['access_token_expires']) { // Token needs refreshing. Refresh it and then return the new one.
+				$refreshed = skydrive_auth::refresh_oauth_token($response['refresh_token']);
+				if (skydrive_auth::save_tokens_to_store($refreshed)) {
+					$newtokens = skydrive_auth::get_tokens_from_store();
+					return $newtokens['access_token'];
+				}
+				exit;
+			} else {
+				return $response['access_token']; // Token currently valid. Return it.
+				exit;
+			}
+		}
+	}
+	
+	// get_tokens_from_store()
+	// save_tokens_to_store()
+	// destroy_tokens_in_store()
+	
+	// These functions provide a gateway to your token store.
+	// In it's basic form, the tokens are written simply to a file called "tokens" in the current working directory, JSON-encoded.
+	// You can edit the location of the token store by editing the DEFINE entry on line 28.
+	
+	// If you want to implement your own token store, you can edit these functions and implement your own code, e.g. if you want to store them in a database.
+	// You MUST save and retrieve tokens in such a way that calls to get_tokens_from_store() will return an associative array
+	// which contains the access token as 'access_token', the refresh token as 'refresh_token' and the expiry (as a UNIX timestamp) as 'access_token_expires'
+	
+	// For more information, see the Wiki on GitHub.
+	
+	public static function get_tokens_from_store() {
+		$response = json_decode(file_get_contents(token_store), TRUE);
+		return $response;
+	}
+	
+	public static function save_tokens_to_store($tokens) {
+		$tokentosave = Array();
+		$tokentosave = Array('access_token' => $tokens['access_token'], 'refresh_token' => $tokens['refresh_token'], 'access_token_expires' => (time()+(int)$tokens['expires_in']));
+		if (file_put_contents(token_store, json_encode($tokentosave))) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static function destroy_tokens_in_store() {
+		if (file_put_contents(token_store, "loggedout")) {
+			return true;
+		} else {
+			return false;
+		}
+		
+	}
 }
+
 
 
 
