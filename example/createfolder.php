@@ -3,7 +3,7 @@
 require_once "header.inc.php";
 require_once "../functions.inc.php";
 
-$token = skydrive_auth::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
+$token = skydrive_tokenstore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
 
 if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_url() to get the redirect URL.
 	echo "<div>";

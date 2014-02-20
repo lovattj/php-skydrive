@@ -1,6 +1,6 @@
 <?php
 require_once "../functions.inc.php";
-$token = skydrive_auth::acquire_token();
+$token = skydrive_tokenstore::acquire_token();
 
 if (!$token) {
 	echo "Error";

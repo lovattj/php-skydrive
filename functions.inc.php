@@ -21,11 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Define security credentials for your app.
 // You can get these when you register your app on the Live Connect Developer Center.
 
-define("client_id", "YOUR CLIENT ID");
-define("client_secret", "YOUR CLIENT SECRET");
+define("client_id", "YOUR LIVE CLIENT ID");
+define("client_secret", "YOUR LIVE CLIENT SECRET");
 define("callback_uri", "YOUR CALLBACK URL");
 define("skydrive_base_url", "https://apis.live.net/v5.0/");
-define("token_store", "tokens"); // Edit to change the location of the token store (if you're using the filesystem)
+define("token_store", "tokens"); // Edit path to your token store if required, see Wiki for more info.
 
 class skydrive {
 
@@ -41,7 +41,7 @@ class skydrive {
 	// Or leave the second parameter blank for the root directory (/me/skydrive/files)
 	// Returns an array of the contents of the folder.
 
-	public function get_folder($folderid, $sort_by='name', $sort_order='ascending', $limit='100') {
+	public function get_folder($folderid, $sort_by='name', $sort_order='ascending', $limit='254') {
 		if ($folderid === null) {
 			$response = $this->curl_get(skydrive_base_url."me/skydrive/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$this->access_token);
 		} else {
@@ -54,7 +54,7 @@ class skydrive {
 			$arraytoreturn = Array();
 			foreach ($response as $subarray) {
 				foreach ($subarray as $item) {
-					array_push($arraytoreturn, Array('name' => $item['name'], 'id' => $item['id'], 'type' => $item['type']));
+					array_push($arraytoreturn, Array('name' => $item['name'], 'id' => $item['id'], 'type' => $item['type'], 'size' => $item['size']));
 				}
 			}
 			return $arraytoreturn;
@@ -399,7 +399,10 @@ class skydrive_auth {
 		return $arraytoreturn;
 	}
 	
-	
+}
+
+class skydrive_tokenstore {
+
 	// acquire_token()
 	
 	// Will attempt to grab an access_token from the current token store.
@@ -410,15 +413,15 @@ class skydrive_auth {
 	
 	public static function acquire_token() {
 		
-		$response = skydrive_auth::get_tokens_from_store();
+		$response = skydrive_tokenstore::get_tokens_from_store();
 		if (empty($response['access_token'])) {	// No token at all, needs to go through login flow. Return false to indicate this.
 			return false;
 			exit;
 		} else {
 			if (time() > (int)$response['access_token_expires']) { // Token needs refreshing. Refresh it and then return the new one.
 				$refreshed = skydrive_auth::refresh_oauth_token($response['refresh_token']);
-				if (skydrive_auth::save_tokens_to_store($refreshed)) {
-					$newtokens = skydrive_auth::get_tokens_from_store();
+				if (skydrive_tokenstore::save_tokens_to_store($refreshed)) {
+					$newtokens = skydrive_tokenstore::get_tokens_from_store();
 					return $newtokens['access_token'];
 				}
 				exit;
@@ -467,8 +470,5 @@ class skydrive_auth {
 		
 	}
 }
-
-
-
 
 ?>

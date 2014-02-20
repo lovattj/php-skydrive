@@ -5,12 +5,12 @@
 // This is an example page that will display the contents of a given SkyDrive folder.
 // If an access_token is not available, it'll direct the user to login with SkyDrive.
 
-require_once "../functions.inc.php";
+require_once "functions.inc.php";
 require_once "header.inc.php";
 
 // Try and get a valid access_token from the token store.
 
-$token = skydrive_auth::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
+$token = skydrive_tokenstore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
 
 if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_url() to get the redirect URL.
 	echo "<div>";

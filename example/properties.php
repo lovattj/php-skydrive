@@ -2,12 +2,12 @@
 @session_start();
 require_once "header.inc.php";
 require_once "../functions.inc.php";
-$token = skydrive_auth::acquire_token();
+$token = skydrive_tokenstore::acquire_token();
 
 if (!$token) {
 	echo "<div>";
 	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-	echo "<span style='vertical-align: middle;'><a href='".build_oauth_url()."'>Login with SkyDrive</a></span>";
+	echo "<span style='vertical-align: middle;'><a href='".skydrive_auth::build_oauth_url()."'>Login with SkyDrive</a></span>";
 	echo "</div>";
 } else {
 
