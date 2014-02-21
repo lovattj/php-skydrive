@@ -6,6 +6,7 @@ This is very much a work in progress!
 See the Wiki for updates and documentation!
 
 Update 19-Feb-2014:
+- Yes! It works with OneDrive fine (new name for SkyDrive).
 - Added support for refresh tokens.
 - You can now build apps that don't require re-authentication every 60 minutes.
 - Also implemented functions to help you build a token store.
