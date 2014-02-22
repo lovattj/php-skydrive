@@ -9,16 +9,16 @@ Update 19-Feb-2014:
 - Yes! It works with OneDrive fine (new name for SkyDrive).
 - Added support for refresh tokens.
 - You can now build apps that don't require re-authentication every 60 minutes.
-- Also implemented functions to help you build a token store.
+- Also implemented functions to help you build a token store, to help you store tokens if you want to.
 - See the Wiki for more information - there are some major changes.
 
 Update 1-Nov-2013:
 - Converted into a Class
-- First, edit functions.inc.php and include your Live Client ID, Secret Key and oAuth callback URL.
-- To call skydrive_auth::build_oauth_url() to obtain an oAuth URL.
-- Redirect your user to that URL, then call skydrive_auth::get_oauth_token on the callback to obtain an access token.
-- Once you have an access token, create a new object - $sd = new skydrive($access_token).
-- Then call the specified method - $response = $sd->get_folder();
+- First, edit `functions.inc.php` and include your Live Client ID, Secret Key and oAuth callback URL.
+- Call `skydrive_auth::build_oauth_url()` to obtain an oAuth URL.
+- Redirect your user to that URL, then call `skydrive_auth::get_oauth_token` on the callback to obtain an access token.
+- Once you have an access token, create a new object - `$sd = new skydrive($access_token)`.
+- Then call the specified method - `$response = $sd->get_folder()`;
 - Exceptions will be thrown when a non-200 HTTP status code is encountered.
 - I'll update the Wiki with new class documentation. Thanks!
 
