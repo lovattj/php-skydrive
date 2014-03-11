@@ -289,7 +289,7 @@ class skydrive {
 		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	  } catch (Exception $e) {
 	  }
-	  	if ($httpcode == "200") {
+	  	if ($httpcode == "200" || $httpcode == "201") {
 	  		return json_decode($output, true);
 	  	} else {
 	  		return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
