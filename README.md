@@ -1,4 +1,4 @@
-php-skydrive
+php-onedrive
 ============
 
 A PHP client library for Microsoft SkyDrive/OneDrive.
