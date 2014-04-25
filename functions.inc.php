@@ -1,8 +1,8 @@
 <?php
 
 /**********************************************************
-php-skydrive.
-A PHP client library for Microsoft SkyDrive.
+php-onedrive.
+A PHP client library for Microsoft SkyDrive/OneDrive.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 define("client_id", "YOUR LIVE CLIENT ID");
 define("client_secret", "YOUR LIVE CLIENT SECRET");
 define("callback_uri", "YOUR CALLBACK URL");
-define("skydrive_base_url", "https://apis.live.net/v5.0/");
+define("onedrive_base_url", "https://apis.live.net/v5.0/");
 define("token_store", "tokens"); // Edit path to your token store if required, see Wiki for more info.
 
 class skydrive {
@@ -36,16 +36,16 @@ class skydrive {
 	}
 	
 	
-	// Gets the contents of a SkyDrive folder.
+	// Gets the contents of a OneDrive folder.
 	// Pass in the ID of the folder you want to get.
 	// Or leave the second parameter blank for the root directory (/me/skydrive/files)
 	// Returns an array of the contents of the folder.
 
 	public function get_folder($folderid, $sort_by='name', $sort_order='ascending', $limit='254') {
 		if ($folderid === null) {
-			$response = $this->curl_get(skydrive_base_url."me/skydrive/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$this->access_token);
+			$response = $this->curl_get(onedrive_base_url."me/skydrive/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$this->access_token);
 		} else {
-			$response = $this->curl_get(skydrive_base_url.$folderid."/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$this->access_token);
+			$response = $this->curl_get(onedrive_base_url.$folderid."/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$this->access_token);
 		}
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
@@ -61,11 +61,11 @@ class skydrive {
 		}
 	}
 
-	// Gets the remaining quota of your SkyDrive account.
+	// Gets the remaining quota of your OneDrive account.
 	// Returns an array containing your total quota and quota available in bytes.
 
 	function get_quota() {
-		$response = $this->curl_get(skydrive_base_url."me/skydrive/quota?access_token=".$this->access_token);
+		$response = $this->curl_get(onedrive_base_url."me/skydrive/quota?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -76,14 +76,14 @@ class skydrive {
 
 	// Gets the properties of the folder.
 	// Returns an array of folder properties.
-	// You can pass null as $folderid to get the properties of your root SkyDrive folder.
+	// You can pass null as $folderid to get the properties of your root OneDrive folder.
 
 	public function get_folder_properties($folderid) {
 		$arraytoreturn = Array();
 		if ($folderid === null) {
-			$response = $this->curl_get(skydrive_base_url."/me/skydrive?access_token=".$this->access_token);
+			$response = $this->curl_get(onedrive_base_url."/me/skydrive?access_token=".$this->access_token);
 		} else {
-			$response = $this->curl_get(skydrive_base_url.$folderid."?access_token=".$this->access_token);
+			$response = $this->curl_get(onedrive_base_url.$folderid."?access_token=".$this->access_token);
 		}
 		
 		if (@array_key_exists('error', $response)) {
@@ -99,7 +99,7 @@ class skydrive {
 	// Returns an array of file properties.
 
 	public function get_file_properties($fileid) {
-		$response = $this->curl_get(skydrive_base_url.$fileid."?access_token=".$this->access_token);
+		$response = $this->curl_get(onedrive_base_url.$fileid."?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -126,10 +126,10 @@ class skydrive {
 	
 	// Gets a shared read link to the item.
 	// This is different to the 'link' returned from get_file_properties in that it's pre-signed.
-	// It's also a link to the file inside SkyDrive's interface rather than directly to the file data.
+	// It's also a link to the file inside OneDrive's interface rather than directly to the file data.
 
 	function get_shared_read_link($fileid) {
-		$response = $this->curl_get(skydrive_base_url.$fileid."/shared_read_link?access_token=".$this->access_token);
+		$response = $this->curl_get(onedrive_base_url.$fileid."/shared_read_link?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -141,7 +141,7 @@ class skydrive {
 	// Gets a shared edit (read-write) link to the item.
 
 	function get_shared_edit_link($fileid) {
-		$response = $this->curl_get(skydrive_base_url.$fileid."/shared_edit_link?access_token=".$this->access_token);
+		$response = $this->curl_get(onedrive_base_url.$fileid."/shared_edit_link?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -153,7 +153,7 @@ class skydrive {
 	// Deletes an object.
 
 	function delete_object($fileid) {
-		$response = $this->curl_delete(skydrive_base_url.$fileid."?access_token=".$this->access_token);
+		$response = $this->curl_delete(onedrive_base_url.$fileid."?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -162,14 +162,14 @@ class skydrive {
 		}
 	}
 	
-	// Downloads a file from SkyDrive to the server.
+	// Downloads a file from OneDrive to the server.
 	// Pass in a file ID.
 	// Returns a multidimensional array:
 	// ['properties'] contains the file metadata and ['data'] contains the raw file data.
 	
 	public function download($fileid) {
 		$props = $this->get_file_properties($fileid);
-		$response = $this->curl_get(skydrive_base_url.$fileid."/content?access_token=".$this->access_token, "false", "HTTP/1.1 302 Found");
+		$response = $this->curl_get(onedrive_base_url.$fileid."/content?access_token=".$this->access_token, "false", "HTTP/1.1 302 Found");
 		$arraytoreturn = Array();
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
@@ -186,7 +186,7 @@ class skydrive {
 	// Also use this function for modifying files, it will overwrite a currently existing file.
 
 	function put_file($folderid, $filename) {
-		$r2s = skydrive_base_url.$folderid."/files/".basename($filename)."?access_token=".$this->access_token;
+		$r2s = onedrive_base_url.$folderid."/files/".basename($filename)."?access_token=".$this->access_token;
 		$response = $this->curl_put($r2s, $filename);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
@@ -204,9 +204,9 @@ class skydrive {
 	
 	function create_folder($folderid, $foldername, $description="") {
 		if ($folderid===null) {
-			$r2s = skydrive_base_url."me/skydrive";
+			$r2s = onedrive_base_url."me/skydrive";
 		} else {
-			$r2s = skydrive_base_url.$folderid;
+			$r2s = onedrive_base_url.$folderid;
 		}
 		$arraytosend = array('name' => $foldername, 'description' => $description);	
 		$response = $this->curl_post($r2s, $arraytosend, $this->access_token);
@@ -222,7 +222,7 @@ class skydrive {
 	
 	// *** PROTECTED FUNCTIONS ***
 	
-	// Internally used function to make a GET request to SkyDrive.
+	// Internally used function to make a GET request to OneDrive.
 	// Functions can override the default JSON-decoding and return just the plain result.
 	// They can also override the expected HTTP status code too.
 	
@@ -240,7 +240,7 @@ class skydrive {
 		}
 	}
 
-	// Internally used function to make a POST request to SkyDrive.
+	// Internally used function to make a POST request to OneDrive.
 
 	protected function curl_post($uri, $inputarray, $access_token) {
 		$trimmed = json_encode($inputarray);
@@ -265,7 +265,7 @@ class skydrive {
 		}
 	}
 
-	// Internally used function to make a PUT request to SkyDrive.
+	// Internally used function to make a PUT request to OneDrive.
 
 	protected function curl_put($uri, $fp) {
 	  $output = "";
@@ -297,7 +297,7 @@ class skydrive {
 		
 	}
 
-	// Internally used function to make a DELETE request to SkyDrive.
+	// Internally used function to make a DELETE request to OneDrive.
 
 	protected function curl_delete($uri) {
 	  $output = "";
@@ -329,7 +329,7 @@ class skydrive_auth {
 
 	// build_oauth_url()
 	
-	// Builds a URL for the user to log in to SkyDrive and get the authorization code, which can then be
+	// Builds a URL for the user to log in to OneDrive and get the authorization code, which can then be
 	// passed onto get_oauth_token to get a valid oAuth token.
 
 	public static function build_oauth_url() {
