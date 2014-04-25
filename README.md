@@ -5,6 +5,11 @@ A PHP client library for Microsoft SkyDrive/OneDrive.
 This is very much a work in progress!
 See the Wiki for updates and documentation!
 
+Update 25-Apr-2014:
+- Added missing "$this->" before curl_get/curl_delete call in function.inc.php
+- Renaming php-skydrive to php-onedrive
+- Replace skydrive by onedrive in documentation
+
 Update 19-Feb-2014:
 - Yes! It works with OneDrive fine (new name for SkyDrive).
 - Added support for refresh tokens.
