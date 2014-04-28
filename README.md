@@ -9,6 +9,7 @@ Update 25-Apr-2014:
 - Added missing "$this->" before curl_get/curl_delete call in function.inc.php
 - Renaming php-skydrive to php-onedrive
 - Replace skydrive by onedrive in documentation
+- Correction of examples where the include path for function.inc.php was wrong
 
 Update 19-Feb-2014:
 - Yes! It works with OneDrive fine (new name for SkyDrive).
