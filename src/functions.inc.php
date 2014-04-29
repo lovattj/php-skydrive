@@ -34,8 +34,8 @@ class skydrive {
 	public function __construct($passed_access_token) {
 		$this->access_token = $passed_access_token;
 	}
-	
-	
+
+
 	// Gets the contents of a OneDrive folder.
 	// Pass in the ID of the folder you want to get.
 	// Or leave the second parameter blank for the root directory (/me/skydrive/files)
@@ -85,7 +85,7 @@ class skydrive {
 		} else {
 			$response = $this->curl_get(onedrive_base_url.$folderid."?access_token=".$this->access_token);
 		}
-		
+
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -122,8 +122,8 @@ class skydrive {
 			return $response['source'];
 		}
 	}
-	
-	
+
+
 	// Gets a shared read link to the item.
 	// This is different to the 'link' returned from get_file_properties in that it's pre-signed.
 	// It's also a link to the file inside OneDrive's interface rather than directly to the file data.
@@ -161,12 +161,12 @@ class skydrive {
 			return true;
 		}
 	}
-	
+
 	// Downloads a file from OneDrive to the server.
 	// Pass in a file ID.
 	// Returns a multidimensional array:
 	// ['properties'] contains the file metadata and ['data'] contains the raw file data.
-	
+
 	public function download($fileid) {
 		$props = $this->get_file_properties($fileid);
 		$response = $this->curl_get(onedrive_base_url.$fileid."/content?access_token=".$this->access_token, "false", "HTTP/1.1 302 Found");
@@ -180,7 +180,7 @@ class skydrive {
 		}		
 	}
 
-	
+
 	// Uploads a file from disk.
 	// Pass the $folderid of the folder you want to send the file to, and the $filename path to the file.
 	// Also use this function for modifying files, it will overwrite a currently existing file.
@@ -194,14 +194,14 @@ class skydrive {
 		} else {
 			return $response;
 		}
-			
+
 	}
-	
+
 	// Creates a folder.
 	// Pass $folderid as the containing folder (or 'null' to create the folder under the root).
 	// Also pass $foldername as the name for the new folder and $description as the description.
 	// Returns the new folder metadata or throws an exception.
-	
+
 	function create_folder($folderid, $foldername, $description="") {
 		if ($folderid===null) {
 			$r2s = onedrive_base_url."me/skydrive";
@@ -219,13 +219,13 @@ class skydrive {
 				return $arraytoreturn;
 			}
 	}
-	
+
 	// *** PROTECTED FUNCTIONS ***
-	
+
 	// Internally used function to make a GET request to OneDrive.
 	// Functions can override the default JSON-decoding and return just the plain result.
 	// They can also override the expected HTTP status code too.
-	
+
 	protected function curl_get($uri, $json_decode_output="true", $expected_status_code="HTTP/1.1 200 OK") {
 		$output = "";
 		$output = @file_get_contents($uri);
@@ -294,7 +294,7 @@ class skydrive {
 	  	} else {
 	  		return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
 	  	}
-		
+
 	}
 
 	// Internally used function to make a DELETE request to OneDrive.
@@ -321,14 +321,14 @@ class skydrive {
 	  		return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
 	  	}
 	}
-	
+
 
 }
 
 class skydrive_auth {
 
 	// build_oauth_url()
-	
+
 	// Builds a URL for the user to log in to OneDrive and get the authorization code, which can then be
 	// passed onto get_oauth_token to get a valid oAuth token.
 
@@ -362,19 +362,19 @@ class skydrive_auth {
 			$output = curl_exec($ch);
 		} catch (Exception $e) {
 		}
-	
+
 		$out2 = json_decode($output, true);
 		$arraytoreturn = Array('access_token' => $out2['access_token'], 'refresh_token' => $out2['refresh_token'], 'expires_in' => $out2['expires_in']);
 		return $arraytoreturn;
 	}
-	
-	
+
+
 	// refresh_oauth_token()
-	
+
 	// Attempts to refresh an oAuth token
 	// Pass in the refresh token obtained from a previous oAuth request.
 	// Returns the new oAuth token and an expiry time in seconds from now (usually 3600 but may vary in future).
-		
+
 	public static function refresh_oauth_token($refresh) {
 		$arraytoreturn = array();
 		$output = "";
@@ -393,26 +393,26 @@ class skydrive_auth {
 			$output = curl_exec($ch);
 		} catch (Exception $e) {
 		}
-	
+
 		$out2 = json_decode($output, true);
 		$arraytoreturn = Array('access_token' => $out2['access_token'], 'refresh_token' => $out2['refresh_token'], 'expires_in' => $out2['expires_in']);
 		return $arraytoreturn;
 	}
-	
+
 }
 
 class skydrive_tokenstore {
 
 	// acquire_token()
-	
+
 	// Will attempt to grab an access_token from the current token store.
 	// If there isn't one then return false to indicate user needs sending through oAuth procedure.
 	// If there is one but it's expired attempt to refresh it, save the new tokens and return an access_token.
 	// If there is one and it's valid then return an access_token.
-	
-	
+
+
 	public static function acquire_token() {
-		
+
 		$response = skydrive_tokenstore::get_tokens_from_store();
 		if (empty($response['access_token'])) {	// No token at all, needs to go through login flow. Return false to indicate this.
 			return false;
@@ -431,26 +431,26 @@ class skydrive_tokenstore {
 			}
 		}
 	}
-	
+
 	// get_tokens_from_store()
 	// save_tokens_to_store()
 	// destroy_tokens_in_store()
-	
+
 	// These functions provide a gateway to your token store.
 	// In it's basic form, the tokens are written simply to a file called "tokens" in the current working directory, JSON-encoded.
 	// You can edit the location of the token store by editing the DEFINE entry on line 28.
-	
+
 	// If you want to implement your own token store, you can edit these functions and implement your own code, e.g. if you want to store them in a database.
 	// You MUST save and retrieve tokens in such a way that calls to get_tokens_from_store() will return an associative array
 	// which contains the access token as 'access_token', the refresh token as 'refresh_token' and the expiry (as a UNIX timestamp) as 'access_token_expires'
-	
+
 	// For more information, see the Wiki on GitHub.
-	
+
 	public static function get_tokens_from_store() {
 		$response = json_decode(file_get_contents(token_store), TRUE);
 		return $response;
 	}
-	
+
 	public static function save_tokens_to_store($tokens) {
 		$tokentosave = Array();
 		$tokentosave = Array('access_token' => $tokens['access_token'], 'refresh_token' => $tokens['refresh_token'], 'access_token_expires' => (time()+(int)$tokens['expires_in']));
@@ -460,14 +460,14 @@ class skydrive_tokenstore {
 			return false;
 		}
 	}
-	
+
 	public static function destroy_tokens_in_store() {
 		if (file_put_contents(token_store, "loggedout")) {
 			return true;
 		} else {
 			return false;
 		}
-		
+
 	}
 }
 
