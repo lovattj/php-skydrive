@@ -1,0 +1,30 @@
+{
+    "name": "Eight56/php-onedrive",
+    "type": "library",
+    "description": "A PHP client library for Microsoft SkyDrive/OneDrive",
+    "keywords": ["api","skydrive","onedrive","microsoft","php","client"],
+    "homepage": "https://github.com/Eight56/php-onedrive",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jonathan Lovatt",
+            "email": "php-skydrive@jlls.info",
+            "homepage": "http://jlls.info",
+            "role": "Developer"
+        },
+        {
+            "name": "Etienne DEBOST",
+            "email": "etienne.debost@gmail.com",
+            "homepage": "http://edebost.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "autoload": {
+        "autoload": {
+          "classmap": ["src/"]
+        }
+    }
+}
