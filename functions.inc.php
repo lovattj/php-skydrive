@@ -197,6 +197,47 @@ class skydrive {
 			
 	}
 	
+	/**
+	 * Upload file directly from remote URL
+	 * 
+	 * @param string $sourceUrl - URL of the file
+	 * @param string $folderId - folder you want to send the file to
+	 * @param string $filename - target filename after upload
+	 */
+	function put_file_from_url($sourceUrl, $folderId, $filename){
+		$r2s = skydrive_base_url.$folderId."/files/".$filename."?access_token=".$this->access_token;
+		
+		$chunkSizeBytes = 1 * 1024 * 1024; //1MB
+		
+		//download file first to tempfile
+		$tempFilename = tempnam("/tmp", "UPLOAD");
+		$temp = fopen($tempFilename, "w");
+		
+		$handle = @fopen($sourceUrl, "rb");
+		if($handle === FALSE){
+			throw new Exception("Unable to download file from " . $sourceUrl);
+		}
+		
+		while (!feof($handle)) {
+			$chunk = fread($handle, $chunkSizeBytes);
+			fwrite($temp, $chunk);
+		}		
+		
+		fclose($handle);
+		fclose($temp);
+		
+		//upload to OneDrive
+		$response = $this->curl_put($r2s, $tempFilename);
+		if (@array_key_exists('error', $response)) {
+			throw new Exception($response['error']." - ".$response['description']);
+			exit;
+		} else {
+			unlink($tempFilename);
+			return $response;
+		}
+	}	
+	
+	
 	// Creates a folder.
 	// Pass $folderid as the containing folder (or 'null' to create the folder under the root).
 	// Also pass $foldername as the name for the new folder and $description as the description.
