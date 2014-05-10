@@ -285,6 +285,11 @@ class skydrive {
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
+		
+		//HTTP response code 100 workaround
+		//see http://www.php.net/manual/en/function.curl-setopt.php#82418
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));			
+		
 		$output = curl_exec($ch);
 		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	  } catch (Exception $e) {
