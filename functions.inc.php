@@ -279,7 +279,7 @@ class skydrive {
 		curl_setopt($ch, CURLOPT_INFILE, $pointer);
 		curl_setopt($ch, CURLOPT_INFILESIZE, (int)$pointersize);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
