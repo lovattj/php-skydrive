@@ -320,12 +320,17 @@ class skydrive {
 		curl_setopt($ch, CURLOPT_INFILE, $pointer);
 		curl_setopt($ch, CURLOPT_INFILESIZE, (int)$pointersize);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
+		
+		//HTTP response code 100 workaround
+		//see http://www.php.net/manual/en/function.curl-setopt.php#82418
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));			
+		
 		$output = curl_exec($ch);
 		$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 	  } catch (Exception $e) {
