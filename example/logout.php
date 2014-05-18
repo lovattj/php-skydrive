@@ -5,7 +5,7 @@
 
 require_once "functions.inc.php";
 
-if (skydrive_tokenstore::destroy_tokens_in_store()) {
+if (\OneDrive\TokenStore::destroy_tokens_in_store()) {
 	header("Location: index.php");
 } else {
 	echo "Error";

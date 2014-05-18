@@ -1,11 +1,11 @@
 <?php
 require_once "../functions.inc.php";
-$token = skydrive_tokenstore::acquire_token();
+$token = \OneDrive\TokenStore::acquire_token();
 
 if (!$token) {
 	echo "Error";
 } else {
-	$sd = new skydrive($token);
+	$sd = new \OneDrive\Manager($token);
 	try {
 		$response = $sd->download($_GET['fileid']);
 		ob_end_clean();  

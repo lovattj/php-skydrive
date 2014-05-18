@@ -2,16 +2,16 @@
 @session_start();
 require_once "header.inc.php";
 require_once "../functions.inc.php";
-$token = skydrive_tokenstore::acquire_token();
+$token = \OneDrive\TokenStore::acquire_token();
 
 if (!$token) {
 	echo "<div>";
 	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-	echo "<span style='vertical-align: middle;'><a href='".skydrive_auth::build_oauth_url()."'>Login with SkyDrive</a></span>";
+	echo "<span style='vertical-align: middle;'><a href='".\OneDrive\Auth::build_oauth_url()."'>Login with SkyDrive</a></span>";
 	echo "</div>";
 } else {
 
-	$sd = new skydrive($token);
+	$sd = new \OneDrive\Manager($token);
 	try {
 		$response = $sd->get_file_properties($_GET['fileid']);
 		echo "<h3>".$response['name']."</h3>";

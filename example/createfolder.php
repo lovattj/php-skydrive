@@ -3,9 +3,9 @@
 require_once "header.inc.php";
 require_once "../functions.inc.php";
 
-$token = skydrive_tokenstore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
+$token = \OneDrive\TokenStore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
 
-if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_url() to get the redirect URL.
+if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth_url() to get the redirect URL.
 	echo "<div>";
 	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
 	echo "<span style='vertical-align: middle;'><a href='".build_oauth_url()."'>Login with SkyDrive</a></span>";
@@ -16,7 +16,7 @@ if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_
 	if (empty($_POST['foldername'])) {
 		echo 'Error - no new folder name specified';
 	} else {
-		$sd = new skydrive($token);
+		$sd = new \OneDrive\Manager($token);
 		try {
 			if (empty($_POST['currentfolderid'])) {
 				$response = $sd->create_folder(null, $_POST['foldername'], 'Description');
@@ -28,7 +28,7 @@ if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_
 		} catch (Exception $e) {
 			// An error occured, print HTTP status code and description.
 			echo "Error: ".$e->getMessage();
-			exit;
+
 		}		
 	}
 
