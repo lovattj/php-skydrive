@@ -41,21 +41,42 @@ class skydrive {
 	// Or leave the second parameter blank for the root directory (/me/skydrive/files)
 	// Returns an array of the contents of the folder.
 
-	public function get_folder($folderid, $sort_by='name', $sort_order='ascending', $limit='254') {
+	public function get_folder($folderid, $sort_by='name', $sort_order='ascending', $limit='255', $offset='0') {
 		if ($folderid === null) {
-			$response = $this->curl_get(skydrive_base_url."me/skydrive/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$this->access_token);
+			$response = $this->curl_get(skydrive_base_url."me/skydrive/files?sort_by=".$sort_by."&sort_order=".$sort_order."&offset=".$offset."&limit=".$limit."&access_token=".$this->access_token);
 		} else {
-			$response = $this->curl_get(skydrive_base_url.$folderid."/files?sort_by=".$sort_by."&sort_order=".$sort_order."&limit=".$limit."&access_token=".$this->access_token);
+			$response = $this->curl_get(skydrive_base_url.$folderid."/files?sort_by=".$sort_by."&sort_order=".$sort_order."&offset=".$offset."&limit=".$limit."&access_token=".$this->access_token);
 		}
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
 		} else {		
 			$arraytoreturn = Array();
+			$temparray = Array();
+			if (@$response['paging']['next']) {
+				parse_str($response['paging']['next'], $parseout);
+				$numerical = array_values($parseout);
+			}
+			if (@$response['paging']['previous']) {
+				parse_str($response['paging']['previous'], $parseout1);
+				$numerical1 = array_values($parseout1);
+			}			
 			foreach ($response as $subarray) {
 				foreach ($subarray as $item) {
-					array_push($arraytoreturn, Array('name' => $item['name'], 'id' => $item['id'], 'type' => $item['type'], 'size' => $item['size']));
+					if (@array_key_exists('id', $item)) {
+						array_push($temparray, Array('name' => $item['name'], 'id' => $item['id'], 'type' => $item['type'], 'size' => $item['size'], 'source' => @$item['source']));
+					}
 				}
+			}
+			$arraytoreturn['data'] = $temparray;
+			if (@$numerical[0]) {
+				if (@$numerical1[0]) {
+					$arraytoreturn['paging'] = Array('previousoffset' => $numerical1[0], 'nextoffset' => $numerical[0]);
+				} else {
+					$arraytoreturn['paging'] = Array('previousoffset' => 0, 'nextoffset' => $numerical[0]);		
+				}			
+			} else {
+				$arraytoreturn['paging'] = Array('previousoffset' => 0, 'nextoffset' => 0);
 			}
 			return $arraytoreturn;
 		}

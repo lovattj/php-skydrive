@@ -5,7 +5,7 @@
 // This is an example page that will display the contents of a given SkyDrive folder.
 // If an access_token is not available, it'll direct the user to login with SkyDrive.
 
-require_once "functions.inc.php";
+require_once "../functions.inc.php";
 require_once "header.inc.php";
 
 // Try and get a valid access_token from the token store.
@@ -30,10 +30,18 @@ if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_
 	
 	$sd = new skydrive($token);
 	if (empty($_GET['folderid'])) {
-		$response = $sd->get_folder(null);	// Get the root folder.
+		if (empty($_GET['offset'])) {
+			$response = $sd->get_folder(null, 'name', 'ascending', 10);	// Get the root folder.
+		} else {
+			$response = $sd->get_folder(null, 'name', 'ascending', 10, $_GET['offset']);	// Get the root folder with an offset.
+		}
 		$properties = $sd->get_folder_properties(null);
 	} else {
-		$response = $sd->get_folder($_GET['folderid']); // Get the specified folder.
+		if (empty($_GET['offset'])) {
+			$response = $sd->get_folder($_GET['folderid'], 'name', 'ascending', 10); // Get the specified folder.
+		} else {
+			$response = $sd->get_folder($_GET['folderid'], 'name', 'ascending', 10, $_GET['offset']); // Get the specified folder with an offset.
+		}
 		$properties = $sd->get_folder_properties($_GET['folderid']);
 		
 	}
@@ -44,7 +52,8 @@ if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_
 	}
 	echo "</div>";
 	echo "<br>";
-	foreach ($response as $item) {		// Loop through the items in the folder and generate the list of items.
+
+	foreach ($response['data'] as $item) {		// Loop through the items in the folder and generate the list of items.
 		echo "<div>";
 		if ($item['type'] == 'folder' || $item['type'] =='album') {
 			echo "<img src='statics/folder-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
@@ -58,6 +67,12 @@ if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_
 		echo "<br>";
 	}
 
+if (@$response['paging']['nextoffset'] != 0) {
+	echo "<a href='index.php?folderid=".$_GET['folderid']."&offset=".$response['paging']['nextoffset']."'>See More</a>"; 
+} else {
+	echo "No more files in folder";
+}
+echo "<br>";
 echo "<a href='logout.php'>Log Out</a>";
 	
 }
