@@ -1,7 +1,7 @@
 <?php
 namespace OneDrive;
 
-class Managet
+class Manager
 {
     const URL_BASE = "https://apis.live.net/v5.0/";
 
@@ -25,30 +25,30 @@ class Managet
         } else {
             $response = $this->curl_get(self::URL_BASE . $folderid . "/files?sort_by=" . $sort_by . "&sort_order=" . $sort_order . "&offset=" . $offset . "&limit=" . $limit . "&access_token=" . $this->access_token);
         }
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
 
         $arraytoreturn = Array();
         $temparray = Array();
-        if (@$response['paging']['next']) {
+        if ($response['paging']['next']) {
             parse_str($response['paging']['next'], $parseout);
             $numerical = array_values($parseout);
         }
-        if (@$response['paging']['previous']) {
+        if ($response['paging']['previous']) {
             parse_str($response['paging']['previous'], $parseout1);
             $numerical1 = array_values($parseout1);
         }
         foreach ($response as $subarray) {
             foreach ($subarray as $item) {
-                if (@array_key_exists('id', $item)) {
-                    array_push($temparray, Array('name' => $item['name'], 'id' => $item['id'], 'type' => $item['type'], 'size' => $item['size'], 'source' => @$item['source']));
+                if (array_key_exists('id', $item)) {
+                    array_push($temparray, Array('name' => $item['name'], 'id' => $item['id'], 'type' => $item['type'], 'size' => $item['size'], 'source' => $item['source']));
                 }
             }
         }
         $arraytoreturn['data'] = $temparray;
-        if (@$numerical[0]) {
-            if (@$numerical1[0]) {
+        if ($numerical[0]) {
+            if ($numerical1[0]) {
                 $arraytoreturn['paging'] = Array('previousoffset' => $numerical1[0], 'nextoffset' => $numerical[0]);
             } else {
                 $arraytoreturn['paging'] = Array('previousoffset' => 0, 'nextoffset' => $numerical[0]);
@@ -65,7 +65,7 @@ class Managet
     function get_quota()
     {
         $response = $this->curl_get(self::URL_BASE . "me/skydrive/quota?access_token=" . $this->access_token);
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
         return $response;
@@ -84,7 +84,7 @@ class Managet
             $response = $this->curl_get(self::URL_BASE . $folderid . "?access_token=" . $this->access_token);
         }
 
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
         $arraytoreturn = array('id' => $response['id'], 'name' => $response['name'], 'parent_id' => $response['parent_id'], 'size' => $response['size'], 'source' => $response['source'], 'created_time' => $response['created_time'], 'updated_time' => $response['updated_time'], 'link' => $response['link'], 'upload_location' => $response['upload_location'], 'is_embeddable' => $response['is_embeddable'], 'count' => $response['count']);
@@ -97,7 +97,7 @@ class Managet
     public function get_file_properties($fileid)
     {
         $response = $this->curl_get(self::URL_BASE . $fileid . "?access_token=" . $this->access_token);
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
         $arraytoreturn = array('id' => $response['id'], 'type' => $response['type'], 'name' => $response['name'], 'parent_id' => $response['parent_id'], 'size' => $response['size'], 'source' => $response['source'], 'created_time' => $response['created_time'], 'updated_time' => $response['updated_time'], 'link' => $response['link'], 'upload_location' => $response['upload_location'], 'is_embeddable' => $response['is_embeddable']);
@@ -111,7 +111,7 @@ class Managet
     public function get_source_link($fileid)
     {
         $response = $this->get_file_properties($fileid);
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
 
         }
@@ -126,7 +126,7 @@ class Managet
     function get_shared_read_link($fileid)
     {
         $response = curl_get(self::URL_BASE . $fileid . "/shared_read_link?access_token=" . $this->access_token);
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
 
         }
@@ -138,7 +138,7 @@ class Managet
     function get_shared_edit_link($fileid)
     {
         $response = curl_get(self::URL_BASE . $fileid . "/shared_edit_link?access_token=" . $this->access_token);
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
         return $response['link'];
@@ -149,7 +149,7 @@ class Managet
     function delete_object($fileid)
     {
         $response = curl_delete(self::URL_BASE . $fileid . "?access_token=" . $this->access_token);
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
         return true;
@@ -165,7 +165,7 @@ class Managet
         $props = $this->get_file_properties($fileid);
         $response = $this->curl_get(self::URL_BASE . $fileid . "/content?access_token=" . $this->access_token, "false", "HTTP/1.1 302 Found");
         $arraytoreturn = Array();
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
         array_push($arraytoreturn, Array('properties' => $props, 'data' => $response));
@@ -182,7 +182,7 @@ class Managet
     {
         $r2s = self::URL_BASE . $folderid . "/files/" . basename($filename) . "?access_token=" . $this->access_token;
         $response = $this->curl_put($r2s, $filename);
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
         return $response;
@@ -220,7 +220,7 @@ class Managet
 
         //upload to OneDrive
         $response = $this->curl_put($r2s, $tempFilename);
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
 
         }
@@ -243,7 +243,7 @@ class Managet
         }
         $arraytosend = array('name' => $foldername, 'description' => $description);
         $response = $this->curl_post($r2s, $arraytosend, $this->access_token);
-        if (@array_key_exists('error', $response)) {
+        if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
 
         }
@@ -261,7 +261,7 @@ class Managet
     protected function curl_get($uri, $json_decode_output = "true", $expected_status_code = "HTTP/1.1 200 OK")
     {
         $output = "";
-        $output = @file_get_contents($uri);
+        $output = file_get_contents($uri);
         if ($http_response_header[0] == $expected_status_code) {
             if ($json_decode_output == "true") {
                 return json_decode($output, true);
