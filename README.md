@@ -5,13 +5,12 @@ A PHP client library for Microsoft SkyDrive/OneDrive.
 This is very much a work in progress!
 See the Wiki for updates and documentation!
 
-Update 18-May-2014:
-IMPORTANT CHANGE!<br>
-`get_folder` now returns a multidimensional array.<br>
-`$array['data']` is now the array of files.<br>
-`$array['pagination']` is an array of page tokens used for pagination.<br>
-Previous behavior was that `$array` on it's own was the array of files only.<br>
-Please update code accordingly and see the Wiki or example project for more information.
+Update 18-May-2014 - IMPORTANT CHANGE.
+- `get_folder` now returns a multidimensional array.
+- `$array['data']` is now the array of files.
+- `$array['pagination']` is an array of page tokens used for pagination.
+- Previous behavior was that `$array` on it's own was the array of files only.
+- Please update code accordingly and see the Wiki or example project for more information.
 
 Update 19-Feb-2014:
 - Yes! It works with OneDrive fine (new name for SkyDrive).
