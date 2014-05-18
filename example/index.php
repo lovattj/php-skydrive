@@ -28,23 +28,34 @@ if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_
 	echo "<form method='post' action='createfolder.php'><input type='hidden' name='currentfolderid' value='".@$_GET['folderid']."'><input type='text' name='foldername' placeholder='Folder Name'>&nbsp;<input type='submit' name='submit' value='submit'></form>";
 	echo "</p>";
 	
+	// First, time to create a new OneDrive object.
+	
 	$sd = new skydrive($token);
+	
+	// Time to prepare and make the request to get the list of files.
+	
 	if (empty($_GET['folderid'])) {
+	
 		if (empty($_GET['offset'])) {
-			$response = $sd->get_folder(null, 'name', 'ascending', 10);	// Get the root folder.
+			$response = $sd->get_folder(null, 'name', 'ascending', 10);	// Gets the first 10 items of the root folder.
 		} else {
-			$response = $sd->get_folder(null, 'name', 'ascending', 10, $_GET['offset']);	// Get the root folder with an offset.
+			$response = $sd->get_folder(null, 'name', 'ascending', 10, $_GET['offset']);	// Gets the next 10 items of the root folder from the specified offset.
 		}
-		$properties = $sd->get_folder_properties(null);
-	} else {
-		if (empty($_GET['offset'])) {
-			$response = $sd->get_folder($_GET['folderid'], 'name', 'ascending', 10); // Get the specified folder.
-		} else {
-			$response = $sd->get_folder($_GET['folderid'], 'name', 'ascending', 10, $_GET['offset']); // Get the specified folder with an offset.
-		}
-		$properties = $sd->get_folder_properties($_GET['folderid']);
 		
+		$properties = $sd->get_folder_properties(null);
+		
+	} else {
+	
+		if (empty($_GET['offset'])) {
+			$response = $sd->get_folder($_GET['folderid'], 'name', 'ascending', 10); // Gets the first 10 items of the specified folder.
+		} else {
+			$response = $sd->get_folder($_GET['folderid'], 'name', 'ascending', 10, $_GET['offset']); // Gets the next 10 items of the specified folder from the specified offset.
+		}
+		
+		$properties = $sd->get_folder_properties($_GET['folderid']);
 	}
+	
+	// Now we've got our files and folder properties, time to display them.
 	
 	echo "<p><div id='bodyheader'><b>".$properties['name']."</b><br>";
 	if (! empty($properties['parent_id'])) {
