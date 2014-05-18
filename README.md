@@ -8,7 +8,7 @@ See the Wiki for updates and documentation!
 Update 18-May-2014 - IMPORTANT CHANGE.
 - `get_folder` now returns a multidimensional array.
 - `$array['data']` is now the array of files.
-- `$array['pagination']` is an array of page tokens used for pagination.
+- `$array['paging']` is an array of page tokens used for pagination.
 - Previous behavior was that `$array` on it's own was the array of files only.
 - Please update code accordingly and see the Wiki or example project for more information.
 
