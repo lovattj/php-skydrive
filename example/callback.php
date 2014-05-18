@@ -12,4 +12,3 @@ if (\OneDrive\TokenStore::save_tokens_to_store($response)) {
 } else {
 	echo "error";
 }
-?>

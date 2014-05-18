@@ -22,4 +22,3 @@ if (!$token) {
 	}
 }
 require_once "footer.inc.php";
-?>

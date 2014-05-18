@@ -35,4 +35,3 @@ if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth
 
 }
 require_once "footer.inc.php";
-?>

@@ -10,4 +10,3 @@ if (\OneDrive\TokenStore::destroy_tokens_in_store()) {
 } else {
 	echo "Error";
 }
-?>

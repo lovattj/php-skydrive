@@ -88,4 +88,3 @@ echo "<a href='logout.php'>Log Out</a>";
 	
 }
 require_once "footer.inc.php";
-?>
