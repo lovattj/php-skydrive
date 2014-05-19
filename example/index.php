@@ -28,44 +28,26 @@ if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth
 	$sd2 = new \OneDrive\Manager($token);
 	$quotaresp = $sd2->get_quota();
 ?>
-	<p>Quota remaining: <?php round((((int)$quotaresp['available']/1024)/1024))?> Mbytes.</p>
+	<p>Quota remaining: <?= $quotaresp['available'];?> Bytes</p>
     <b>Create folder here:<br>
 	<form method='post' action='createfolder.php'>
-        <input type='hidden' name='currentfolderid' value='<?= $_GET['folderid']?>'>
+        <input type='hidden' name='currentfolderid' value='<?= isset($_GET['folderid'])?$_GET['folderid']:''?>'>
         <input type='text' name='foldername' placeholder='Folder Name'>
         <input type='submit' name='submit' value='submit'>
     </form>
 <?php
-	
 	// First, time to create a new OneDrive object.
-	
 	$sd = new \OneDrive\Manager($token);
-	
 	// Time to prepare and make the request to get the list of files.
-	
-	if (empty($_GET['folderid'])) {
-	
-		if (empty($_GET['offset'])) {
-			$response = $sd->get_folder(null, 'name', 'ascending', 10);	// Gets the first 10 items of the root folder.
-		} else {
-			$response = $sd->get_folder(null, 'name', 'ascending', 10, $_GET['offset']);	// Gets the next 10 items of the root folder from the specified offset.
-		}
-		
-		$properties = $sd->get_folder_properties(null);
-		
+	if (isset($_GET['folderid'])) {
+        $response = $sd->get_folder($_GET['folderid'], 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null)); // Gets the next 10 items of the specified folder from the specified offset.
+        $properties = $sd->get_folder_properties($_GET['folderid']);
 	} else {
-	
-		if (empty($_GET['offset'])) {
-			$response = $sd->get_folder($_GET['folderid'], 'name', 'ascending', 10); // Gets the first 10 items of the specified folder.
-		} else {
-			$response = $sd->get_folder($_GET['folderid'], 'name', 'ascending', 10, $_GET['offset']); // Gets the next 10 items of the specified folder from the specified offset.
-		}
-		
-		$properties = $sd->get_folder_properties($_GET['folderid']);
+        $response = $sd->get_folder(null, 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null));	// Gets the next 10 items of the root folder from the specified offset.
+        $properties = $sd->get_folder_properties(null);
 	}
 	
 	// Now we've got our files and folder properties, time to display them.
-	
 	echo "<p><div id='bodyheader'><b>".$properties['name']."</b><br>";
 	if (! empty($properties['parent_id'])) {
 		echo "<a href='index.php?folderid=".$properties['parent_id']."'>Up to parent folder</a>";
@@ -87,13 +69,13 @@ if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth
 		echo "<br>";
 	}
 
-if ($response['paging']['nextoffset'] != 0) {
-	echo "<a href='index.php?folderid=".$_GET['folderid']."&offset=".$response['paging']['nextoffset']."'>See More</a>"; 
-} else {
-	echo "No more files in folder";
-}
-echo "<br>";
-echo "<a href='logout.php'>Log Out</a>";
+    if ($response['paging']['nextoffset'] != 0) {
+        echo "<a href='index.php?folderid=".$_GET['folderid']."&offset=".$response['paging']['nextoffset']."'>See More</a>";
+    } else {
+        echo "No more files in folder";
+    }
+    echo "<br>";
+    echo "<a href='logout.php'>Log Out</a>";
 	
 }
 

@@ -18,43 +18,49 @@ class Manager
     // Or leave the second parameter blank for the root directory (/me/skydrive/files)
     // Returns an array of the contents of the folder.
 
-    public function get_folder($folderid, $sort_by = 'name', $sort_order = 'ascending', $limit = '255', $offset = '0')
+    public function get_folder($folderid, $sort_by = 'name', $sort_order = 'ascending', $limit = 255, $offset = 0)
     {
-        if ($folderid === null) {
-            $response = $this->curl_get(self::URL_BASE . "me/skydrive/files?sort_by=" . $sort_by . "&sort_order=" . $sort_order . "&offset=" . $offset . "&limit=" . $limit . "&access_token=" . $this->access_token);
-        } else {
-            $response = $this->curl_get(self::URL_BASE . $folderid . "/files?sort_by=" . $sort_by . "&sort_order=" . $sort_order . "&offset=" . $offset . "&limit=" . $limit . "&access_token=" . $this->access_token);
-        }
+        $params = array(
+            'sort_by' =>$sort_by,
+            'sort_order' => $sort_order,
+            'offset' => $offset,
+            'limit' => $limit,
+            'access_token' => $this->access_token
+        );
+
+        $response = $this->curl_get(self::URL_BASE . ($folderid ? $folderid : "me/skydrive") . "/files?".http_build_query($params));
+
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
 
-        $arraytoreturn = Array();
-        $temparray = Array();
-        if ($response['paging']['next']) {
+        $arraytoreturn = array();
+        $temparray = array();
+        if (isset($response['paging']['next'])) {
             parse_str($response['paging']['next'], $parseout);
             $numerical = array_values($parseout);
         }
-        if ($response['paging']['previous']) {
+        if (isset($response['paging']['previous'])) {
             parse_str($response['paging']['previous'], $parseout1);
             $numerical1 = array_values($parseout1);
         }
+
         foreach ($response as $subarray) {
             foreach ($subarray as $item) {
                 if (array_key_exists('id', $item)) {
-                    array_push($temparray, Array('name' => $item['name'], 'id' => $item['id'], 'type' => $item['type'], 'size' => $item['size'], 'source' => $item['source']));
+                    array_push($temparray, $item);
                 }
             }
         }
         $arraytoreturn['data'] = $temparray;
-        if ($numerical[0]) {
+        if (isset($numerical)) {
             if ($numerical1[0]) {
-                $arraytoreturn['paging'] = Array('previousoffset' => $numerical1[0], 'nextoffset' => $numerical[0]);
+                $arraytoreturn['paging'] = array('previousoffset' => $numerical1[0], 'nextoffset' => $numerical[0]);
             } else {
-                $arraytoreturn['paging'] = Array('previousoffset' => 0, 'nextoffset' => $numerical[0]);
+                $arraytoreturn['paging'] = array('previousoffset' => 0, 'nextoffset' => $numerical[0]);
             }
         } else {
-            $arraytoreturn['paging'] = Array('previousoffset' => 0, 'nextoffset' => 0);
+            $arraytoreturn['paging'] = array('previousoffset' => 0, 'nextoffset' => 0);
         }
         return $arraytoreturn;
     }
@@ -77,18 +83,16 @@ class Manager
 
     public function get_folder_properties($folderid)
     {
-        $arraytoreturn = Array();
-        if ($folderid === null) {
-            $response = $this->curl_get(self::URL_BASE . "/me/skydrive?access_token=" . $this->access_token);
-        } else {
-            $response = $this->curl_get(self::URL_BASE . $folderid . "?access_token=" . $this->access_token);
-        }
+        $params = array(
+            'access_token' => $this->access_token
+        );
+
+        $response = $this->curl_get(self::URL_BASE . ($folderid?$folderid:'/me/skydrive') . '?' . http_build_query($params));
 
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
-        $arraytoreturn = array('id' => $response['id'], 'name' => $response['name'], 'parent_id' => $response['parent_id'], 'size' => $response['size'], 'source' => $response['source'], 'created_time' => $response['created_time'], 'updated_time' => $response['updated_time'], 'link' => $response['link'], 'upload_location' => $response['upload_location'], 'is_embeddable' => $response['is_embeddable'], 'count' => $response['count']);
-        return $arraytoreturn;
+        return $response;
     }
 
     // Gets the properties of the file.
@@ -100,8 +104,7 @@ class Manager
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
-        $arraytoreturn = array('id' => $response['id'], 'type' => $response['type'], 'name' => $response['name'], 'parent_id' => $response['parent_id'], 'size' => $response['size'], 'source' => $response['source'], 'created_time' => $response['created_time'], 'updated_time' => $response['updated_time'], 'link' => $response['link'], 'upload_location' => $response['upload_location'], 'is_embeddable' => $response['is_embeddable']);
-        return $arraytoreturn;
+        return $response;
     }
 
     // Gets a pre-signed (public) direct URL to the item
@@ -164,11 +167,11 @@ class Manager
     {
         $props = $this->get_file_properties($fileid);
         $response = $this->curl_get(self::URL_BASE . $fileid . "/content?access_token=" . $this->access_token, "false", "HTTP/1.1 302 Found");
-        $arraytoreturn = Array();
+        $arraytoreturn = array();
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
-        array_push($arraytoreturn, Array('properties' => $props, 'data' => $response));
+        array_push($arraytoreturn, array('properties' => $props, 'data' => $response));
         return $arraytoreturn;
 
     }
@@ -247,8 +250,8 @@ class Manager
             throw new OneDriveException($response['error'] . " - " . $response['description']);
 
         }
-        $arraytoreturn = Array();
-        array_push($arraytoreturn, Array('name' => $response['name'], 'id' => $response['id']));
+        $arraytoreturn = array();
+        array_push($arraytoreturn, array('name' => $response['name'], 'id' => $response['id']));
         return $arraytoreturn;
     }
 
@@ -269,7 +272,10 @@ class Manager
                 return $output;
             }
         } else {
-            return Array('error' => 'HTTP status code not expected - got ', 'description' => substr($http_response_header[0], 9, 3));
+            return array(
+                'error' => 'HTTP status code not expected - got ',
+                'description' => substr($http_response_header[0], 9, 3)
+            );
         }
     }
 
