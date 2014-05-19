@@ -11,7 +11,7 @@ if (!file_exists('app-info.json')){
 $credentials = json_decode(file_get_contents('app-info.json'),true);
 $oneDriveAuth = new \OneDrive\Auth($credentials);
 
-$redirectUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'callback.php';
+$redirectUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/callback.php';
 
 // Try and get a valid access_token from the token store.
 

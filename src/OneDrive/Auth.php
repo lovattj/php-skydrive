@@ -4,6 +4,7 @@ namespace OneDrive;
 class Auth
 {
     const URL_AUTHORIZE = 'https://login.live.com/oauth20_authorize.srf';
+    const URL_TOKEN     = 'https://login.live.com/oauth20_token.srf';
 
     protected $client_id;
     protected $client_secret;
@@ -33,7 +34,7 @@ class Auth
             'response_type' => 'code',
             'redirect_uri' => $callback_uri
         );
-        $response =self::URL_AUTHORIZE . '?' . http_build_query($params);
+        $response = self::URL_AUTHORIZE . '?' . http_build_query($params);
         return $response;
     }
 
@@ -41,40 +42,36 @@ class Auth
      * Obtains an oAuth token
      * Pass in the authorization code parameter obtained from the inital callback.
      * Returns the oAuth token and an expiry time in seconds from now (usually 3600 but may vary in future).
-     * @param $auth
+     * @param $authCode
      * @param $callback_uri
-     * @internal param $client_id
-     * @internal param $client_secret
      * @return array
+     * @throws \Exception
      */
-    public function get_oauth_token($auth,$callback_uri)
+    public function get_oauth_token($authCode,$callback_uri)
     {
-        $output = "";
-        try {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, self::URL_AUTHORIZE);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/x-www-form-urlencoded',
-            ));
-            curl_setopt($ch, CURLOPT_POST, TRUE);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        $params = array(
+            'client_id' => $this->client_id,
+            'redirect_uri' => $callback_uri,
+            'client_secret' => $this->client_secret,
+            'code' => $authCode,
+            'grant_type' => 'authorization_code'
+        );
 
-            $params = array(
-                'client_id' => $this->client_id,
-                'redirect_uri' => $callback_uri,
-                'client_secret' => $this->client_secret,
-                'code' => $auth,
-                'grant_type' => 'authorization_code'
-            );
-
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
-            $output = curl_exec($ch);
-        } catch (\Exception $e) {
-            //todo user notice
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, self::URL_TOKEN);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/x-www-form-urlencoded',
+        ));
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+        $curlRes = curl_exec($ch);
+        if (!$curlRes){
+            throw new \Exception(curl_error($ch),curl_errno($ch));
         }
 
-        return json_decode($output, true);
+        return json_decode($curlRes, true);
     }
 
     /**
@@ -84,38 +81,29 @@ class Auth
      */
     public function refresh_oauth_token($refresh,$callback_uri)
     {
-        $output = "";
-        try {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, self::URL_AUTHORIZE);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/x-www-form-urlencoded',
-            ));
-            curl_setopt($ch, CURLOPT_POST, TRUE);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        $params = array(
+            'client_id' => $this->client_id,
+            'redirect_uri' => $callback_uri,
+            'client_secret' => $this->client_secret,
+            'refresh_token' => $refresh,
+            'grant_type' => 'refresh_token'
+        );
 
-            $params = array(
-                'client_id' => $this->client_id,
-                'redirect_uri' => $callback_uri,
-                'client_secret' => $this->client_secret,
-                'refresh_token' => $refresh,
-                'grant_type' => 'refresh_token'
-            );
-
-            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
-            $output = curl_exec($ch);
-        } catch (\Exception $e) {
-            //todo user notice
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, self::URL_AUTHORIZE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/x-www-form-urlencoded',
+        ));
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+        $curlRes = curl_exec($ch);
+        if (!$curlRes){
+            throw new \Exception(curl_error($ch),curl_errno($ch));
         }
 
-        $out2 = json_decode($output, true);
-        $arraytoreturn = array(
-            'access_token' => $out2['access_token'],
-            'refresh_token' => $out2['refresh_token'],
-            'expires_in' => $out2['expires_in']
-        );
-        return $arraytoreturn;
+        return json_decode($curlRes, true);
     }
 
 } 

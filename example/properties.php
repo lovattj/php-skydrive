@@ -2,14 +2,19 @@
 require_once __DIR__.'/../vendor/autoload.php';
 ob_start();
 
-session_start();
+if (!file_exists('app-info.json')){
+    exit('There is no `app-info.json` file with app credentials');
+}
+
+$credentials = json_decode(file_get_contents('app-info.json'),true);
+$oneDriveAuth = new \OneDrive\Auth($credentials);
 
 $token = \OneDrive\TokenStore::acquire_token();
 
 if (!$token) {
 	echo "<div>";
 	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-	echo "<span style='vertical-align: middle;'><a href='".\OneDrive\Auth::build_oauth_url()."'>Login with SkyDrive</a></span>";
+	echo "<span style='vertical-align: middle;'><a href='".$oneDriveAuth->build_oauth_url()."'>Login with SkyDrive</a></span>";
 	echo "</div>";
 } else {
 

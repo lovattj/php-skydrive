@@ -12,10 +12,12 @@ if (!file_exists('app-info.json')){
 $credentials = json_decode(file_get_contents('app-info.json'),true);
 $oneDriveAuth = new \OneDrive\Auth($credentials);
 
+$redirectUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/callback.php';
 
-$response = $oneDriveAuth->get_oauth_token($_GET['code']);
-if (\OneDrive\TokenStore::save_tokens_to_store($response)) {
-	header("Location: index.php");
-} else {
-	echo "error";
+if (empty($_GET['code'])){
+    exit('Query parameter `code` not defined');
 }
+
+$response = $oneDriveAuth->get_oauth_token($_GET['code'],$redirectUrl);
+var_dump($response);
+\OneDrive\TokenStore::save_tokens_to_store($response);

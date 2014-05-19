@@ -4,7 +4,7 @@ namespace OneDrive;
 class TokenStore
 {
 
-    const TOKEN_STORE = "tokens";
+    const TOKEN_STORE = "app-tokens.json";
     // acquire_token()
 
     // Will attempt to grab an access_token from the current token store.
@@ -48,15 +48,16 @@ class TokenStore
 
     public static function get_tokens_from_store()
     {
-        $response = json_decode(file_get_contents(self::TOKEN_STORE), TRUE);
+        if (!file_exists(self::TOKEN_STORE))
+            return false;
+
+        $response = json_decode(file_get_contents(self::TOKEN_STORE), true);
         return $response;
     }
 
     public static function save_tokens_to_store($tokens)
     {
-        $tokentosave = Array();
-        $tokentosave = Array('access_token' => $tokens['access_token'], 'refresh_token' => $tokens['refresh_token'], 'access_token_expires' => (time() + (int)$tokens['expires_in']));
-        if (file_put_contents(self::TOKEN_STORE, json_encode($tokentosave))) {
+        if (file_put_contents(self::TOKEN_STORE, json_encode($tokens))) {
             return true;
         } else {
             return false;
@@ -65,6 +66,9 @@ class TokenStore
 
     public static function destroy_tokens_in_store()
     {
+        if (!file_exists(self::TOKEN_STORE))
+            return false;
+
         if (file_put_contents(self::TOKEN_STORE, "loggedout")) {
             return true;
         } else {
