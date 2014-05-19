@@ -30,15 +30,14 @@ date_default_timezone_set("Europe/London");
     </style>
 </head>
 <body>
-<div id="headerBar">
-    <div id="whiteText">&nbsp;php-skydrive demo</div>
-</div>
-<br>
-
-<?=
-    $content;
-?>
-
+    <div id="headerBar">
+        <div id="whiteText">&nbsp;php-skydrive demo</div>
+    </div>
+    <br>
+    <?= $content; ?>
+    <div>
+        <a href="/">Index Page</a>
+    </div>
 </body>
 </html>
  
