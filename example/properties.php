@@ -6,21 +6,14 @@ if (!file_exists('app-info.json')){
     exit('There is no `app-info.json` file with app credentials');
 }
 
-$credentials = json_decode(file_get_contents('app-info.json'),true);
-$oneDriveAuth = new \OneDrive\Auth($credentials);
+include __DIR__.'/template/init_manager.php';
 
-$token = \OneDrive\TokenStore::acquire_token();
-
-if (!$token) {
-	echo "<div>";
-	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-	echo "<span style='vertical-align: middle;'><a href='".$oneDriveAuth->build_oauth_url()."'>Login with SkyDrive</a></span>";
-	echo "</div>";
+if (!$tokens) {
+    include __DIR__.'/template/auth_link.php';
 } else {
 
-	$sd = new \OneDrive\Manager($token);
 	try {
-		$response = $sd->get_file_properties($_GET['fileid']);
+		$response = $manager->get_file_properties($_GET['fileid']);
 		echo "<h3>".$response['name']."</h3>";
 		echo "Size: ".round(($response['size']/1024),2)."Kb<br>";
 		echo "Created: ".$response['created_time']."<br>";
@@ -47,6 +40,7 @@ if (!$token) {
 	}
 
 }
+
 $content = ob_get_contents();
 ob_end_clean();
 require_once __DIR__."/template/index.php";

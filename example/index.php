@@ -4,29 +4,14 @@
 require_once __DIR__.'/../vendor/autoload.php';
 ob_clean();
 
-if (!file_exists('app-info.json')){
-    exit('There is no `app-info.json` file with app credentials');
-}
+include __DIR__.'/template/init_manager.php';
 
-$credentials = json_decode(file_get_contents('app-info.json'),true);
-$oneDriveAuth = new \OneDrive\Auth($credentials);
 
-$redirectUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/callback.php';
-
-// Try and get a valid access_token from the token store.
-
-$token = \OneDrive\TokenStore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
-
-if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth_url() to get the redirect URL.
-	echo "<div>";
-	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>";
-	echo "<span style='vertical-align: middle;'><a href='".$oneDriveAuth->build_oauth_url($redirectUrl)."'>Login with SkyDrive</a></span>";
-	echo "</div>";
-	
+if (!$tokens) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth_url() to get the redirect URL.
+	include __DIR__.'/template/auth_link.php';
 } else { // Otherwise, if we have a token, use it to create an object and start calling methods to build our page.
-	
-	$sd2 = new \OneDrive\Manager($token);
-	$quotaresp = $sd2->get_quota();
+
+	$quotaresp = $manager->get_quota();
 ?>
 	<p>Quota remaining: <?= $quotaresp['available'];?> Bytes</p>
     <b>Create folder here:
@@ -36,17 +21,11 @@ if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth
         <input type='submit' name='submit' value='submit'>
     </form>
 <?php
-	// First, time to create a new OneDrive object.
-	$sd = new \OneDrive\Manager($token);
+
 	// Time to prepare and make the request to get the list of files.
-	if (isset($_GET['folderid'])) {
-        $response = $sd->get_folder($_GET['folderid'], 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null)); // Gets the next 10 items of the specified folder from the specified offset.
-        $properties = $sd->get_folder_properties($_GET['folderid']);
-	} else {
-        $response = $sd->get_folder(null, 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null));	// Gets the next 10 items of the root folder from the specified offset.
-        $properties = $sd->get_folder_properties(null);
-	}
-	
+    $response = $manager->get_folder(@$_GET['folderid'], 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null)); // Gets the next 10 items of the specified folder from the specified offset.
+    $properties = $manager->get_folder_properties(@$_GET['folderid']);
+
 	// Now we've got our files and folder properties, time to display them.
     ?>
     <hr>

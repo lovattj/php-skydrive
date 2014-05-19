@@ -2,25 +2,20 @@
 require_once __DIR__.'/../vendor/autoload.php';
 ob_start();
 
-$token = \OneDrive\TokenStore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
+include __DIR__.'/template/init_manager.php';
 
-if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth_url() to get the redirect URL.
-	echo "<div>";
-	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-	echo "<span style='vertical-align: middle;'><a href='".build_oauth_url()."'>Login with SkyDrive</a></span>";
-	echo "</div>";
-	
+if (!$tokens) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth_url() to get the redirect URL.
+    include __DIR__.'/template/auth_link.php';
 } else {
 
 	if (empty($_POST['foldername'])) {
 		echo 'Error - no new folder name specified';
 	} else {
-		$sd = new \OneDrive\Manager($token);
 		try {
 			if (empty($_POST['currentfolderid'])) {
-				$response = $sd->create_folder(null, $_POST['foldername'], 'Description');
+				$response = $manager->create_folder(null, $_POST['foldername'], 'Description');
 			} else {
-				$response = $sd->create_folder($_POST['currentfolderid'], $_POST['foldername'], 'Description');				
+				$response = $manager->create_folder($_POST['currentfolderid'], $_POST['foldername'], 'Description');
 			}
 			// Folder was created, return metadata.
 			print_r($response);

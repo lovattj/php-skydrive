@@ -2,28 +2,16 @@
 require_once __DIR__.'/../vendor/autoload.php';
 ob_start();
 
-$token = \OneDrive\TokenStore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
+include __DIR__.'/template/init_manager.php';
 
-if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth_url() to get the redirect URL.
-	echo "<div>";
-	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-	echo "<span style='vertical-align: middle;'><a href='".\OneDrive\Auth::build_oauth_url()."'>Login with SkyDrive</a></span>";
-	echo "</div>";
-	
+if (!$tokens) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth_url() to get the redirect URL.
+    include __DIR__.'/template/auth_link.php';
 } else {
-
-	$sd = new \OneDrive\Manager($token);
-	try {
-		$response = $sd->put_file($_GET['folderid'], '/file/to/put');
-		// File was uploaded, return metadata.
-		print_r($response);
-	} catch (Exception $e) {
-		// An error occured, print HTTP status code and description.
-		echo "Error: ".$e->getMessage();
-		exit;
-	}
-
+    $response = $manager->put_file($_GET['folderid'], '/file/to/put');
+    // File was uploaded, return metadata.
+    print_r($response);
 }
+
 $content = ob_get_contents();
 ob_end_clean();
 require_once __DIR__."/template/index.php";

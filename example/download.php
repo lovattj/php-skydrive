@@ -2,14 +2,13 @@
 require_once __DIR__.'/../vendor/autoload.php';
 ob_start();
 
-$token = \OneDrive\TokenStore::acquire_token();
+include __DIR__.'/template/init_manager.php';
 
-if (!$token) {
-	echo "Error";
+if (!$tokens) {
+    include __DIR__.'/template/auth_link.php';
 } else {
-	$sd = new \OneDrive\Manager($token);
 	try {
-		$response = $sd->download($_GET['fileid']);
+		$response = $manager->download($_GET['fileid']);
 		ob_end_clean();  
 		header('Content-Type: application/octet-stream');
 		header('Content-Length: '.$response[0]['properties']['size']);
