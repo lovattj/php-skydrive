@@ -3,7 +3,7 @@
     "description": "A PHP client library for Microsoft SkyDrive/OneDrive",
 	"type": "library",
 	"keywords": ["api","skydrive","onedrive","microsoft","php","client"],
-	"homepage": "https://github.com/Eight56/php-onedrive",
+	"homepage": "https://github.com/lovattj/php-onedrive",
 	"license": "GPL",
 	"authors": [
 		{
