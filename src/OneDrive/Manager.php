@@ -5,10 +5,19 @@ class Manager
 {
     const URL_BASE = "https://apis.live.net/v5.0/";
 
-    public $access_token = '';
+    /**
+     * @var \OneDrive\Auth
+     */
+    protected $auth;
 
-    public function __construct($passed_access_token)
+    /**
+     * @var string
+     */
+    protected $access_token = '';
+
+    public function __construct($credentials,$passed_access_token)
     {
+        $this->auth = new Auth($credentials);
         $this->access_token = $passed_access_token;
     }
 
@@ -68,7 +77,7 @@ class Manager
     // Gets the remaining quota of your SkyDrive account.
     // Returns an array containing your total quota and quota available in bytes.
 
-    function get_quota()
+    public function get_quota()
     {
         $response = $this->curl_get(self::URL_BASE . "me/skydrive/quota?access_token=" . $this->access_token);
         if (array_key_exists('error', $response)) {
@@ -126,7 +135,7 @@ class Manager
     // This is different to the 'link' returned from get_file_properties in that it's pre-signed.
     // It's also a link to the file inside SkyDrive's interface rather than directly to the file data.
 
-    function get_shared_read_link($fileid)
+    public function get_shared_read_link($fileid)
     {
         $response = curl_get(self::URL_BASE . $fileid . "/shared_read_link?access_token=" . $this->access_token);
         if (array_key_exists('error', $response)) {
@@ -138,7 +147,7 @@ class Manager
 
     // Gets a shared edit (read-write) link to the item.
 
-    function get_shared_edit_link($fileid)
+    public function get_shared_edit_link($fileid)
     {
         $response = curl_get(self::URL_BASE . $fileid . "/shared_edit_link?access_token=" . $this->access_token);
         if (array_key_exists('error', $response)) {
@@ -149,7 +158,7 @@ class Manager
 
     // Deletes an object.
 
-    function delete_object($fileid)
+    public function delete_object($fileid)
     {
         $response = curl_delete(self::URL_BASE . $fileid . "?access_token=" . $this->access_token);
         if (array_key_exists('error', $response)) {
@@ -181,7 +190,7 @@ class Manager
     // Pass the $folderid of the folder you want to send the file to, and the $filename path to the file.
     // Also use this function for modifying files, it will overwrite a currently existing file.
 
-    function put_file($folderid, $filename)
+    public function put_file($folderid, $filename)
     {
         $r2s = self::URL_BASE . $folderid . "/files/" . basename($filename) . "?access_token=" . $this->access_token;
         $response = $this->curl_put($r2s, $filename);
@@ -198,7 +207,7 @@ class Manager
      * @param string $folderId - folder you want to send the file to
      * @param string $filename - target filename after upload
      */
-    function put_file_from_url($sourceUrl, $folderId, $filename)
+    public function put_file_from_url($sourceUrl, $folderId, $filename)
     {
         $r2s = self::URL_BASE . $folderId . "/files/" . $filename . "?access_token=" . $this->access_token;
 
@@ -237,7 +246,7 @@ class Manager
     // Also pass $foldername as the name for the new folder and $description as the description.
     // Returns the new folder metadata or throws an exception.
 
-    function create_folder($folderid, $foldername, $description = "")
+    public function create_folder($folderid, $foldername, $description = "")
     {
         if ($folderid === null) {
             $r2s = self::URL_BASE . "me/skydrive";

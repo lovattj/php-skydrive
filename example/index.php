@@ -82,6 +82,7 @@ function echoFolderContent($response){
         <tr>
             <td><img src="statics/<?=(($item['type'] == 'folder' || $item['type'] =='album') ? 'folder' :$item['type']) ?>-icon.png" width="32px" style="vertical-align: middle;"></td>
             <td style="vertical-align: middle;"><a title="Open folder" href="index.php?folderid="<?=$item['id']?>"><?=$item['name']?></a></td>
+            <td><?= $item['description']; ?></td>
             <td><?= $item['created_time']; ?></td>
             <td><?= $item['updated_time']; ?></td>
             <td><a href="<?= $item['link']; ?>">link</a></td>
