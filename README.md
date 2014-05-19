@@ -5,6 +5,11 @@ A PHP client library for Microsoft SkyDrive/OneDrive.
 This is very much a work in progress!
 See the Wiki for updates and documentation!
 
+Update 19-May-2014 - Composer.
+- By request, I've created a composer.json and published "lovattj/php-skydrive": "v1.0" on Packagist.
+- I've also added an autoloader definition.
+- I've not got much Composer or autoloading experience, so if it doesn't work please let me know!
+
 Update 18-May-2014 - IMPORTANT CHANGE.
 - `get_folder` now returns a multidimensional array.
 - `$array['data']` is now the array of files.
@@ -33,16 +38,20 @@ System Requirements:
 - PHP 5 (I tested with 5.3.3)
 - cURL extension for PHP
 
-How to install:
+How to install manually:
 - Clone project
-- Edit "functions.inc.php" and include your Live Client ID, Secret Key and oAuth callback URL in relevant places.
-- Start calling functions!
-- A very basic test example is included.
+- Edit "src/functions.inc.php" and include your Live Client ID, Secret Key and oAuth callback URL in relevant places.
+- Require "src/functions.inc.php", create an object and start calling functions!
+
+How to install via Composer:
+- Require "lovattj/php-skydrive": "v1.0" in your composer.json
+- Edit "vendor/lovattj/php-skydrive/src/functions.inc.php" and include your Live Client ID, Secret Key and oAuth callback URL in relevant places.
+- Require "vendor/lovattj/php-skydrive/src/functions.inc.php", create an object and start calling functions!
 
 How to get the example running:
 - Deploy to your web server
 - Make sure the file "example/tokens" is read+writable by your web user.
-- Edit "functions.inc.php" and include your Live Client ID, Secret Key and oAuth callback URL in relevant places.
+- Edit "src/functions.inc.php" and include your Live Client ID, Secret Key and oAuth callback URL in relevant places.
 - Hit "example/index.php" and follow the prompts to login with SkyDrive!
 
 Questions/Comments:
