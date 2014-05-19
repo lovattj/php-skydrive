@@ -1,36 +1,51 @@
 <?php
+require_once __DIR__.'/../src/OneDrive/Auth.php';
+require_once __DIR__.'/../src/OneDrive/Manager.php';
+require_once __DIR__.'/../src/OneDrive/TokenStore.php';
+
 
 // index.php
 
 // This is an example page that will display the contents of a given SkyDrive folder.
 // If an access_token is not available, it'll direct the user to login with SkyDrive.
 
-require_once "../functions.inc.php";
 require_once "header.inc.php";
+
+use OneDrive\Auth;
+use OneDrive\Manager;
+use OneDrive\TokenStore;
+
+$redirectUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
+
+$oneDriveAuth = new Auth('000000004C11A375','9aNZcGISy5kaeBXMQPwuUSg1-K9l7oiZ');
 
 // Try and get a valid access_token from the token store.
 
-$token = \OneDrive\TokenStore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
+$token = TokenStore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
 
 if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth_url() to get the redirect URL.
 	echo "<div>";
-	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-	echo "<span style='vertical-align: middle;'><a href='".\OneDrive\Auth::build_oauth_url()."'>Login with SkyDrive</a></span>";
+	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>";
+	echo "<span style='vertical-align: middle;'><a href='".$oneDriveAuth->build_oauth_url($redirectUrl)."'>Login with SkyDrive</a></span>";
 	echo "</div>";
 	
 } else { // Otherwise, if we have a token, use it to create an object and start calling methods to build our page.
 	
 	$sd2 = new \OneDrive\Manager($token);
 	$quotaresp = $sd2->get_quota();
-	
-	echo "Quota remaining: ".round((((int)$quotaresp['available']/1024)/1024))." Mbytes.</p>";
-	echo "<p><b>Create folder here:<br>";
-	echo "<form method='post' action='createfolder.php'><input type='hidden' name='currentfolderid' value='".@$_GET['folderid']."'><input type='text' name='foldername' placeholder='Folder Name'>&nbsp;<input type='submit' name='submit' value='submit'></form>";
-	echo "</p>";
+?>
+	<p>Quota remaining: <?php round((((int)$quotaresp['available']/1024)/1024))?> Mbytes.</p>
+    <b>Create folder here:<br>
+	<form method='post' action='createfolder.php'>
+        <input type='hidden' name='currentfolderid' value='<?= $_GET['folderid']?>'>
+        <input type='text' name='foldername' placeholder='Folder Name'>
+        <input type='submit' name='submit' value='submit'>
+    </form>
+<?php
 	
 	// First, time to create a new OneDrive object.
 	
-	$sd = new \OneDrive\Manager($token);
+	$sd = new Manager($token);
 	
 	// Time to prepare and make the request to get the list of files.
 	
@@ -78,7 +93,7 @@ if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth
 		echo "<br>";
 	}
 
-if (@$response['paging']['nextoffset'] != 0) {
+if ($response['paging']['nextoffset'] != 0) {
 	echo "<a href='index.php?folderid=".$_GET['folderid']."&offset=".$response['paging']['nextoffset']."'>See More</a>"; 
 } else {
 	echo "No more files in folder";
