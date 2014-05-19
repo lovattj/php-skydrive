@@ -30,7 +30,7 @@ class StatusCodes {
     /**
      * The token was invalid, missing, or expired.
      */
-    const INVALID_TOKEN = 401;
+    const REQUEST_TOKEN_EXPIRED = 401;
 
     /**
      * The token was not authorized, or the user has not been granted permissions.
