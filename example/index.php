@@ -29,8 +29,8 @@ if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth
 	$quotaresp = $sd2->get_quota();
 ?>
 	<p>Quota remaining: <?= $quotaresp['available'];?> Bytes</p>
-    <b>Create folder here:<br>
-	<form method='post' action='createfolder.php'>
+    <b>Create folder here:
+	<form method='post' action='createfolder.php' style="display: inline-block">
         <input type='hidden' name='currentfolderid' value='<?= isset($_GET['folderid'])?$_GET['folderid']:''?>'>
         <input type='text' name='foldername' placeholder='Folder Name'>
         <input type='submit' name='submit' value='submit'>
@@ -48,26 +48,17 @@ if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth
 	}
 	
 	// Now we've got our files and folder properties, time to display them.
-	echo "<p><div id='bodyheader'><b>".$properties['name']."</b><br>";
-	if (! empty($properties['parent_id'])) {
-		echo "<a href='index.php?folderid=".$properties['parent_id']."'>Up to parent folder</a>";
-	}
-	echo "</div>";
-	echo "<br>";
-
-	foreach ($response['data'] as $item) {		// Loop through the items in the folder and generate the list of items.
-		echo "<div>";
-		if ($item['type'] == 'folder' || $item['type'] =='album') {
-			echo "<img src='statics/folder-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-			echo "<span style='vertical-align: middle;'><a title='Open folder' href='index.php?folderid=".$item['id']."'>".$item['name']."</a></span>";
-		} else {
-			echo "<img src='statics/".$item['type']."-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-			echo "<span style='vertical-align: middle;'><a title='Download' href='download.php?fileid=".$item['id']."'>".$item['name']."</a><br>";
-			echo "<a href='properties.php?fileid=".$item['id']."'>Properties</a></span>";
-		}
-		echo "</div>";
-		echo "<br>";
-	}
+    ?>
+    <hr>
+    <div id="bodyheader">
+        <?php if (isset($properties['parent_id'])):?>
+            <a href="index.php?folderid=<?=$properties['parent_id']?>">...</a>
+            <span>\</span>
+        <?php endif; ?>
+        <b><?= $properties['name'] ?> </b>
+	</div>
+<?php
+	echoFolderContent($response);
 
     if ($response['paging']['nextoffset'] != 0) {
         echo "<a href='index.php?folderid=".$_GET['folderid']."&offset=".$response['paging']['nextoffset']."'>See More</a>";
@@ -82,3 +73,20 @@ if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth
 $content = ob_get_contents();
 ob_end_clean();
 require_once __DIR__."/template/index.php";
+
+
+function echoFolderContent($response){
+    echo '<table id="tableFiles">';
+    foreach ($response['data'] as $item) {		// Loop through the items in the folder and generate the list of items.
+        ?>
+        <tr>
+            <td><img src="statics/<?=(($item['type'] == 'folder' || $item['type'] =='album') ? 'folder' :$item['type']) ?>-icon.png" width="32px" style="vertical-align: middle;"></td>
+            <td style="vertical-align: middle;"><a title="Open folder" href="index.php?folderid="<?=$item['id']?>"><?=$item['name']?></a></td>
+            <td><?= $item['created_time']; ?></td>
+            <td><?= $item['updated_time']; ?></td>
+            <td><a href="<?= $item['link']; ?>">link</a></td>
+        </tr>
+        <?php
+    }
+    echo '</table>';
+}

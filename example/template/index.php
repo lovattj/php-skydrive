@@ -27,6 +27,10 @@ date_default_timezone_set("Europe/London");
             font-family: GeezaPro, Helvetica Neue, Helvetica, Arial, sans-serif;
             font-size: 1.5em;
         }
+
+        #tableFiles td{
+            border: 1px solid black;
+        }
     </style>
 </head>
 <body>
