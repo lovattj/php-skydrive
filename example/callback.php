@@ -21,8 +21,8 @@ if (empty($_GET['code'])){
 
 $response = $manager->getAuth()->get_oauth_token($_GET['code'],$redirectUrl);
 var_dump($response);
-if (\OneDrive\TokenStore::save_tokens_to_store($response))
-    echo '<p>Authefication is success</p>';
+file_put_contents('app-tokens.json',$response);
+echo '<p>Authefication is success</p>';
 
 $content = ob_get_contents();
 ob_end_clean();
