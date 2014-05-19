@@ -13,31 +13,45 @@ class Manager
     /**
      * @var string
      */
-    protected $access_token = '';
+    protected $tokens = '';
 
     public function __construct($credentials,$passed_access_token)
     {
         $this->auth = new Auth($credentials);
-        $this->access_token = $passed_access_token;
+        $this->tokens = $passed_access_token;
     }
 
+    /**
+     * @return \OneDrive\Auth
+     */
+    public function getAuth()
+    {
+        return $this->auth;
+    }
 
-    // Gets the contents of a SkyDrive folder.
-    // Pass in the ID of the folder you want to get.
-    // Or leave the second parameter blank for the root directory (/me/skydrive/files)
-    // Returns an array of the contents of the folder.
+    //<editor-fold desc="filesystem">
 
+    /**
+     * Gets the contents of a SkyDrive folder.
+     * @param $folderid
+     * @param string $sort_by
+     * @param string $sort_order
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     * @throws OneDriveException
+     */
     public function get_folder($folderid, $sort_by = 'name', $sort_order = 'ascending', $limit = 255, $offset = 0)
     {
         $params = array(
             'sort_by' =>$sort_by,
             'sort_order' => $sort_order,
             'offset' => $offset,
-            'limit' => $limit,
-            'access_token' => $this->access_token
+            'limit' => $limit
         );
 
-        $response = $this->curl_get(self::URL_BASE . ($folderid ? $folderid : "me/skydrive") . "/files?".http_build_query($params));
+        $r2s = $this->generateUrl(($folderid ? $folderid : "me/skydrive")."/files",$params);
+        $response = $this->curl_get($r2s);
 
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
@@ -79,7 +93,8 @@ class Manager
 
     public function get_quota()
     {
-        $response = $this->curl_get(self::URL_BASE . "me/skydrive/quota?access_token=" . $this->access_token);
+        $r2s = $this->generateUrl("me/skydrive/quota");
+        $response = $this->curl_get($r2s);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
@@ -92,11 +107,8 @@ class Manager
 
     public function get_folder_properties($folderid)
     {
-        $params = array(
-            'access_token' => $this->access_token
-        );
-
-        $response = $this->curl_get(self::URL_BASE . ($folderid?$folderid:'/me/skydrive') . '?' . http_build_query($params));
+        $r2s = $this->generateUrl(($folderid?$folderid:'/me/skydrive'));
+        $response = $this->curl_get($r2s);
 
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
@@ -107,37 +119,27 @@ class Manager
     // Gets the properties of the file.
     // Returns an array of file properties.
 
-    public function get_file_properties($fileid)
+    public function get_file_properties($fileId)
     {
-        $response = $this->curl_get(self::URL_BASE . $fileid . "?access_token=" . $this->access_token);
+        $r2s = $this->generateUrl($fileId);
+        $response = $this->curl_get($r2s);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
         return $response;
     }
 
-    // Gets a pre-signed (public) direct URL to the item
-    // Pass in a file ID
-    // Returns a string containing the pre-signed URL.
-
-    public function get_source_link($fileid)
+    /**
+     * Gets a shared read link to the item.
+     * @param $fileId
+     * @return mixed
+     * @throws OneDriveException
+     */
+    public function get_shared_read_link($fileId)
     {
-        $response = $this->get_file_properties($fileid);
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
+        $r2s = $this->generateUrl("$fileId/shared_edit_link");
+        $response = $this->curl_get($r2s);
 
-        }
-        return $response['source'];
-    }
-
-
-    // Gets a shared read link to the item.
-    // This is different to the 'link' returned from get_file_properties in that it's pre-signed.
-    // It's also a link to the file inside SkyDrive's interface rather than directly to the file data.
-
-    public function get_shared_read_link($fileid)
-    {
-        $response = curl_get(self::URL_BASE . $fileid . "/shared_read_link?access_token=" . $this->access_token);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
 
@@ -145,11 +147,17 @@ class Manager
         return $response['link'];
     }
 
-    // Gets a shared edit (read-write) link to the item.
 
+    /**
+     * Gets a shared edit (read-write) link to the item.
+     * @param $fileid
+     * @return mixed
+     * @throws OneDriveException
+     */
     public function get_shared_edit_link($fileid)
     {
-        $response = curl_get(self::URL_BASE . $fileid . "/shared_edit_link?access_token=" . $this->access_token);
+        $r2s = $this->generateUrl("$fileid/shared_edit_link");
+        $response = $this->curl_get($r2s);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
@@ -158,9 +166,10 @@ class Manager
 
     // Deletes an object.
 
-    public function delete_object($fileid)
+    public function delete_object($fileId)
     {
-        $response = curl_delete(self::URL_BASE . $fileid . "?access_token=" . $this->access_token);
+        $r2s = $this->generateUrl($fileId);
+        $response = $this->curl_delete($r2s);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
@@ -174,8 +183,10 @@ class Manager
 
     public function download($fileid)
     {
+        $r2s = $this->generateUrl("$fileid/content");
+        $response = $this->curl_get($r2s, "false", "HTTP/1.1 302 Found");
+
         $props = $this->get_file_properties($fileid);
-        $response = $this->curl_get(self::URL_BASE . $fileid . "/content?access_token=" . $this->access_token, "false", "HTTP/1.1 302 Found");
         $arraytoreturn = array();
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
@@ -190,10 +201,11 @@ class Manager
     // Pass the $folderid of the folder you want to send the file to, and the $filename path to the file.
     // Also use this function for modifying files, it will overwrite a currently existing file.
 
-    public function put_file($folderid, $filename)
+    public function put_file($folderId, $filename)
     {
-        $r2s = self::URL_BASE . $folderid . "/files/" . basename($filename) . "?access_token=" . $this->access_token;
+        $r2s = $this->generateUrl("$folderId/files/$filename");
         $response = $this->curl_put($r2s, $filename);
+
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
@@ -206,10 +218,14 @@ class Manager
      * @param string $sourceUrl - URL of the file
      * @param string $folderId - folder you want to send the file to
      * @param string $filename - target filename after upload
+     * @throws OneDriveException
+     * @return array|mixed
      */
     public function put_file_from_url($sourceUrl, $folderId, $filename)
     {
-        $r2s = self::URL_BASE . $folderId . "/files/" . $filename . "?access_token=" . $this->access_token;
+//        $r2s = self::URL_BASE . $folderId . "/files/" . $filename . "?access_token=" . $this->tokens['access_token'];
+
+        $r2s = $this->generateUrl("$folderId/files/$filename");
 
         $chunkSizeBytes = 1 * 1024 * 1024; //1MB
 
@@ -248,31 +264,26 @@ class Manager
 
     public function create_folder($folderid, $foldername, $description = "")
     {
-        if ($folderid === null) {
-            $r2s = self::URL_BASE . "me/skydrive";
-        } else {
-            $r2s = self::URL_BASE . $folderid;
-        }
-        $arraytosend = array('name' => $foldername, 'description' => $description);
-        $response = $this->curl_post($r2s, $arraytosend, $this->access_token);
+        $r2s = self::URL_BASE . ($folderid? $folderid:"me/skydrive");
+
+        $params = array(
+            'name' => $foldername,
+            'description' => $description
+        );
+
+        $response = $this->curl_post($r2s, $params, $this->tokens['access_token']);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
-
         }
-        $arraytoreturn = array();
-        array_push($arraytoreturn, array('name' => $response['name'], 'id' => $response['id']));
-        return $arraytoreturn;
+        return $response;
     }
 
-    // *** PROTECTED FUNCTIONS ***
+    //</editor-fold desc="filesystem">
 
-    // Internally used function to make a GET request to SkyDrive.
-    // Functions can override the default JSON-decoding and return just the plain result.
-    // They can also override the expected HTTP status code too.
+    //<editor-fold desc="curl">
 
     protected function curl_get($uri, $json_decode_output = "true", $expected_status_code = "HTTP/1.1 200 OK")
     {
-        $output = "";
         $output = file_get_contents($uri);
         if ($http_response_header[0] == $expected_status_code) {
             if ($json_decode_output == "true") {
@@ -288,62 +299,70 @@ class Manager
         }
     }
 
-    // Internally used function to make a POST request to SkyDrive.
-
+    /**
+     * Internally used function to make a POST request to SkyDrive.
+     */
     protected function curl_post($uri, $inputarray, $access_token)
     {
         $trimmed = json_encode($inputarray);
-        try {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $uri);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                'Content-Type: application/json',
-                'Authorization: Bearer ' . $access_token,
-            ));
-            curl_setopt($ch, CURLOPT_POST, TRUE);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $trimmed);
-            $output = curl_exec($ch);
-            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        } catch (Exception $e) {
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $uri);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . $access_token,
+        ));
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $trimmed);
+        $output = curl_exec($ch);
+        if (!$output){
+            throw new \Exception(curl_error($ch),curl_errno($ch));
         }
-        if ($httpcode == "201") {
+
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($httpcode == 201) {
             return json_decode($output, true);
         } else {
             return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
         }
     }
 
-    // Internally used function to make a PUT request to SkyDrive.
 
+    /**
+     * Internally used function to make a PUT request to SkyDrive.
+     * @param $uri
+     * @param $fp
+     * @throws \Exception
+     * @return array|mixed
+     */
     protected function curl_put($uri, $fp)
     {
         $output = "";
-        try {
-            $pointer = fopen($fp, 'r+');
-            $stat = fstat($pointer);
-            $pointersize = $stat['size'];
-            $ch = curl_init($uri);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-            curl_setopt($ch, CURLOPT_PUT, true);
-            curl_setopt($ch, CURLOPT_INFILE, $pointer);
-            curl_setopt($ch, CURLOPT_INFILESIZE, (int)$pointersize);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-            curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
-
-            //HTTP response code 100 workaround
-            //see http://www.php.net/manual/en/function.curl-setopt.php#82418
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
-
-            $output = curl_exec($ch);
-            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        } catch (Exception $e) {
+        $pointer = fopen($fp, 'r+');
+        $stat = fstat($pointer);
+        $pointersize = $stat['size'];
+        $ch = curl_init($uri);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+        curl_setopt($ch, CURLOPT_PUT, true);
+        curl_setopt($ch, CURLOPT_INFILE, $pointer);
+        curl_setopt($ch, CURLOPT_INFILESIZE, (int)$pointersize);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
+        //HTTP response code 100 workaround
+        //see http://www.php.net/manual/en/function.curl-setopt.php#82418
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
+        $output = curl_exec($ch);
+        if (!$output){
+            throw new \Exception(curl_error($ch),curl_errno($ch));
         }
+
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($httpcode == "200" || $httpcode == "201") {
             return json_decode($output, true);
         } else {
@@ -352,31 +371,45 @@ class Manager
 
     }
 
-    // Internally used function to make a DELETE request to SkyDrive.
-
+    /**
+     * Internally used function to make a DELETE request to SkyDrive.
+     * @param $uri
+     * @throws \Exception
+     * @return array|mixed
+     */
     protected function curl_delete($uri)
     {
-        $output = "";
-        try {
-            $ch = curl_init($uri);
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 4);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-            curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
-            $output = curl_exec($ch);
-            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        } catch (Exception $e) {
+        $ch = curl_init($uri);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
+        $output = curl_exec($ch);
+        if (!$output){
+            throw new \Exception(curl_error($ch),curl_errno($ch));
         }
-        if ($httpcode == "200") {
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if ($httpcode == 200) {
             return json_decode($output, true);
         } else {
             return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
         }
     }
+    //</editor-fold desc="curl">
 
 
+    protected function generateUrl($path, array $params = array())
+    {
+        $params['access_token'] = $this->tokens['access_token'];
+
+        return http_build_url(self::URL_BASE,array(
+            "path"  => $path,
+            "query" => http_build_query($params)
+        ));
+    }
 }
