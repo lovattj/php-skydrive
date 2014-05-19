@@ -1,7 +1,6 @@
 <?php
-
-require_once "header.inc.php";
-require_once "../functions.inc.php";
+require_once __DIR__.'/../vendor/autoload.php';
+ob_start();
 
 $token = \OneDrive\TokenStore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
 
@@ -34,4 +33,6 @@ if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth
 
 
 }
-require_once "footer.inc.php";
+$content = ob_get_contents();
+ob_end_clean();
+require_once __DIR__."/template/index.php";

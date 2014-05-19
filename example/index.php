@@ -1,27 +1,21 @@
 <?php
-require_once __DIR__.'/../src/OneDrive/Auth.php';
-require_once __DIR__.'/../src/OneDrive/Manager.php';
-require_once __DIR__.'/../src/OneDrive/TokenStore.php';
-
-
-// index.php
-
 // This is an example page that will display the contents of a given SkyDrive folder.
 // If an access_token is not available, it'll direct the user to login with SkyDrive.
+require_once __DIR__.'/../vendor/autoload.php';
+ob_clean();
 
-require_once "header.inc.php";
+if (!file_exists('app-info.json')){
+    exit('There is no `app-info.json` file with app credentials');
+}
 
-use OneDrive\Auth;
-use OneDrive\Manager;
-use OneDrive\TokenStore;
+$credentials = json_decode(file_get_contents('app-info.json'),true);
+$oneDriveAuth = new \OneDrive\Auth($credentials);
 
-$redirectUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
-
-$oneDriveAuth = new Auth('000000004C11A375','9aNZcGISy5kaeBXMQPwuUSg1-K9l7oiZ');
+$redirectUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'].'callback.php';
 
 // Try and get a valid access_token from the token store.
 
-$token = TokenStore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
+$token = \OneDrive\TokenStore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
 
 if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth_url() to get the redirect URL.
 	echo "<div>";
@@ -45,7 +39,7 @@ if (!$token) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth
 	
 	// First, time to create a new OneDrive object.
 	
-	$sd = new Manager($token);
+	$sd = new \OneDrive\Manager($token);
 	
 	// Time to prepare and make the request to get the list of files.
 	
@@ -102,4 +96,7 @@ echo "<br>";
 echo "<a href='logout.php'>Log Out</a>";
 	
 }
-require_once "footer.inc.php";
+
+$content = ob_get_contents();
+ob_end_clean();
+require_once __DIR__."/template/index.php";

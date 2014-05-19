@@ -1,5 +1,7 @@
 <?php
-require_once "../functions.inc.php";
+require_once __DIR__.'/../vendor/autoload.php';
+ob_start();
+
 $token = \OneDrive\TokenStore::acquire_token();
 
 if (!$token) {
@@ -18,7 +20,8 @@ if (!$token) {
 	} catch (Exception $e) {
 		// An error occured, print HTTP status code and description.
 		echo "Error: ".$e->getMessage();
-		exit;
 	}
 }
-require_once "footer.inc.php";
+$content = ob_get_contents();
+ob_end_clean();
+require_once __DIR__."/template/index.php";

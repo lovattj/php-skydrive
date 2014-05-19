@@ -8,10 +8,17 @@ class Auth
     protected $client_id;
     protected $client_secret;
 
-    public function __construct($client_id,$client_secret)
+    /**
+     * @param array $credentials - [id,secret]
+     * @throws OneDriveException
+     */
+    public function __construct($credentials)
     {
-        $this->client_id = $client_id;
-        $this->client_secret = $client_secret;
+        if (!array_key_exists('id',$credentials) || !array_key_exists('secret',$credentials))
+            throw new OneDriveException('Incorrect app credentials');
+
+        $this->client_id = $credentials['id'];
+        $this->client_secret = $credentials['secret'];
     }
 
     /**
@@ -43,8 +50,6 @@ class Auth
     public function get_oauth_token($auth,$callback_uri)
     {
         $output = "";
-        $client_secret_enc = urlencode($this->client_secret);
-        $callback_uri_enc = urlencode($callback_uri);
         try {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, self::URL_AUTHORIZE);
@@ -69,13 +74,7 @@ class Auth
             //todo user notice
         }
 
-        $out2 = json_decode($output, true);
-        $arraytoreturn = array(
-            'access_token' => $out2['access_token'],
-            'refresh_token' => $out2['refresh_token'],
-            'expires_in' => $out2['expires_in']
-        );
-        return $arraytoreturn;
+        return json_decode($output, true);
     }
 
     /**

@@ -1,7 +1,9 @@
 <?php
-@session_start();
-require_once "header.inc.php";
-require_once "../functions.inc.php";
+require_once __DIR__.'/../vendor/autoload.php';
+ob_start();
+
+session_start();
+
 $token = \OneDrive\TokenStore::acquire_token();
 
 if (!$token) {
@@ -40,4 +42,6 @@ if (!$token) {
 	}
 
 }
-require_once "footer.inc.php";
+$content = ob_get_contents();
+ob_end_clean();
+require_once __DIR__."/template/index.php";
