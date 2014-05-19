@@ -79,15 +79,18 @@ class Auth
      * Pass in the refresh token obtained from a previous oAuth request.
      * Returns the new oAuth token and an expiry time in seconds from now (usually 3600 but may vary in future).
      */
-    public function refresh_oauth_token($refresh,$callback_uri)
+    public function refresh_oauth_token($refresh,$callback_uri=null)
     {
         $params = array(
             'client_id' => $this->client_id,
-            'redirect_uri' => $callback_uri,
+//            'redirect_uri' => $callback_uri,
             'client_secret' => $this->client_secret,
             'refresh_token' => $refresh,
             'grant_type' => 'refresh_token'
         );
+        if ($callback_uri){
+            $params['redirect_uri'] = $callback_uri;
+        }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, self::URL_AUTHORIZE);

@@ -18,16 +18,19 @@ class TokenStore
         $response = self::get_tokens_from_store();
         if (empty($response['access_token'])) { // No token at all, needs to go through login flow. Return false to indicate this.
             return false;
-        } else {
-            if (time() > (int)$response['access_token_expires']) { // Token needs refreshing. Refresh it and then return the new one.
-                $refreshed = Auth::refresh_oauth_token($response['refresh_token']);
-                if (TokenStore::save_tokens_to_store($refreshed)) {
-                    $newtokens = \OneDrive\TokenStore::get_tokens_from_store();
-                    return $newtokens['access_token'];
-                }
-            } else {
-                return $response['access_token']; // Token currently valid. Return it.
+        }
+
+        if (time() > (int)$response['access_token_expires']) { // Token needs refreshing. Refresh it and then return the new one.
+            //todo remove it in future
+            $credentials = json_decode(file_get_contents('app-info.json'),true);
+            $oneDriveAuth = new Auth($credentials);
+            $refreshed = $oneDriveAuth->refresh_oauth_token($response['refresh_token']);
+            if (TokenStore::save_tokens_to_store($refreshed)) {
+                $newtokens = \OneDrive\TokenStore::get_tokens_from_store();
+                return $newtokens['access_token'];
             }
+        } else {
+            return $response['access_token']; // Token currently valid. Return it.
         }
     }
 
