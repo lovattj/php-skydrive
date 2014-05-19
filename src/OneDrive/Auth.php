@@ -3,6 +3,8 @@ namespace OneDrive;
 
 class Auth
 {
+    const URL_AUTHORIZE = 'https://login.live.com/oauth20_authorize.srf';
+
     protected $client_id;
     protected $client_secret;
 
@@ -18,7 +20,13 @@ class Auth
      */
     public function build_oauth_url($callback_uri)
     {
-        $response = "https://login.live.com/oauth20_authorize.srf?client_id=".$this->client_id."&scope=wl.signin%20wl.offline_access%20wl.skydrive_update%20wl.basic&response_type=code&redirect_uri=" . urlencode($callback_uri);
+        $params = array(
+            'client_id' =>$this->client_id,
+            'scope' => 'wl.signin wl.offline_access wl.skydrive_update wl.basic',
+            'response_type' => 'code',
+            'redirect_uri' => $callback_uri
+        );
+        $response =self::URL_AUTHORIZE . '?' . http_build_query($params);
         return $response;
     }
 
@@ -39,7 +47,7 @@ class Auth
         $callback_uri_enc = urlencode($callback_uri);
         try {
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "https://login.live.com/oauth20_token.srf");
+            curl_setopt($ch, CURLOPT_URL, self::URL_AUTHORIZE);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/x-www-form-urlencoded',
@@ -47,14 +55,26 @@ class Auth
             curl_setopt($ch, CURLOPT_POST, TRUE);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 
-            $data = "client_id=".$this->client_id."&redirect_uri=" . $callback_uri_enc . "&client_secret=" . $client_secret_enc . "&code=$auth&grant_type=authorization_code";
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            $params = array(
+                'client_id' => $this->client_id,
+                'redirect_uri' => $callback_uri,
+                'client_secret' => $this->client_secret,
+                'code' => $auth,
+                'grant_type' => 'authorization_code'
+            );
+
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
             $output = curl_exec($ch);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            //todo user notice
         }
 
         $out2 = json_decode($output, true);
-        $arraytoreturn = array('access_token' => $out2['access_token'], 'refresh_token' => $out2['refresh_token'], 'expires_in' => $out2['expires_in']);
+        $arraytoreturn = array(
+            'access_token' => $out2['access_token'],
+            'refresh_token' => $out2['refresh_token'],
+            'expires_in' => $out2['expires_in']
+        );
         return $arraytoreturn;
     }
 
@@ -65,13 +85,10 @@ class Auth
      */
     public function refresh_oauth_token($refresh,$callback_uri)
     {
-        $arraytoreturn = array();
-        $callback_uri_enc = urlencode($callback_uri);
-        $client_secret_enc = urlencode($this->client_secret);
         $output = "";
         try {
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "https://login.live.com/oauth20_token.srf");
+            curl_setopt($ch, CURLOPT_URL, self::URL_AUTHORIZE);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Type: application/x-www-form-urlencoded',
@@ -79,15 +96,26 @@ class Auth
             curl_setopt($ch, CURLOPT_POST, TRUE);
             curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
 
+            $params = array(
+                'client_id' => $this->client_id,
+                'redirect_uri' => $callback_uri,
+                'client_secret' => $this->client_secret,
+                'refresh_token' => $refresh,
+                'grant_type' => 'refresh_token'
+            );
 
-            $data = "client_id=".$this->client_id."&redirect_uri=$callback_uri_enc&client_secret=$client_secret_enc&refresh_token=$refresh&grant_type=refresh_token";
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
             $output = curl_exec($ch);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+            //todo user notice
         }
 
         $out2 = json_decode($output, true);
-        $arraytoreturn = array('access_token' => $out2['access_token'], 'refresh_token' => $out2['refresh_token'], 'expires_in' => $out2['expires_in']);
+        $arraytoreturn = array(
+            'access_token' => $out2['access_token'],
+            'refresh_token' => $out2['refresh_token'],
+            'expires_in' => $out2['expires_in']
+        );
         return $arraytoreturn;
     }
 
