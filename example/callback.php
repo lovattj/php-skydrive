@@ -20,4 +20,7 @@ if (empty($_GET['code'])){
 
 $response = $oneDriveAuth->get_oauth_token($_GET['code'],$redirectUrl);
 var_dump($response);
-\OneDrive\TokenStore::save_tokens_to_store($response);
+if (\OneDrive\TokenStore::save_tokens_to_store($response))
+    echo 'Authefication is success'
+?>
+<a href="/">Index Page</a>

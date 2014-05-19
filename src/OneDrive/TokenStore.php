@@ -3,16 +3,15 @@ namespace OneDrive;
 
 class TokenStore
 {
+    const TOKEN_STORE_FILE = "app-tokens.json";
 
-    const TOKEN_STORE = "app-tokens.json";
-    // acquire_token()
-
-    // Will attempt to grab an access_token from the current token store.
-    // If there isn't one then return false to indicate user needs sending through oAuth procedure.
-    // If there is one but it's expired attempt to refresh it, save the new tokens and return an access_token.
-    // If there is one and it's valid then return an access_token.
-
-
+    /**
+     * Will attempt to grab an access_token from the current token store.
+     * If there isn't one then return false to indicate user needs sending through oAuth procedure.
+     * If there is one but it's expired attempt to refresh it, save the new tokens and return an access_token.
+     * If there is one and it's valid then return an access_token.
+     * @return bool
+     */
     public static function acquire_token()
     {
 
@@ -32,9 +31,6 @@ class TokenStore
         }
     }
 
-    // get_tokens_from_store()
-    // save_tokens_to_store()
-    // destroy_tokens_in_store()
 
     // These functions provide a gateway to your token store.
     // In it's basic form, the tokens are written simply to a file called "tokens" in the current working directory, JSON-encoded.
@@ -48,16 +44,20 @@ class TokenStore
 
     public static function get_tokens_from_store()
     {
-        if (!file_exists(self::TOKEN_STORE))
+        if (!file_exists(self::TOKEN_STORE_FILE))
             return false;
 
-        $response = json_decode(file_get_contents(self::TOKEN_STORE), true);
+        $response = json_decode(file_get_contents(self::TOKEN_STORE_FILE), true);
         return $response;
     }
 
-    public static function save_tokens_to_store($tokens)
+    public static function save_tokens_to_store(array $tokens)
     {
-        if (file_put_contents(self::TOKEN_STORE, json_encode($tokens))) {
+        if (!array_key_exists('access_token',$tokens))  return false;
+
+        $tokens['access_token_expires'] = (time() + (int)$tokens['expires_in']);
+
+        if (file_put_contents(self::TOKEN_STORE_FILE, json_encode($tokens))) {
             return true;
         } else {
             return false;
@@ -66,10 +66,10 @@ class TokenStore
 
     public static function destroy_tokens_in_store()
     {
-        if (!file_exists(self::TOKEN_STORE))
+        if (!file_exists(self::TOKEN_STORE_FILE))
             return false;
 
-        if (file_put_contents(self::TOKEN_STORE, "loggedout")) {
+        if (file_put_contents(self::TOKEN_STORE_FILE, "loggedout")) {
             return true;
         } else {
             return false;
