@@ -1,7 +1,7 @@
 <?php
 @session_start();
 require_once "header.inc.php";
-require_once "../functions.inc.php";
+require_once "../src/functions.inc.php";
 $token = skydrive_tokenstore::acquire_token();
 
 if (!$token) {

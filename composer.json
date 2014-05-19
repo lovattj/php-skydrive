@@ -1,7 +1,24 @@
 {
     "name": "lovattj/php-skydrive",
     "description": "A PHP client library for Microsoft SkyDrive/OneDrive",
+	"type": "library",
+	"keywords": ["api","skydrive","onedrive","microsoft","php","client"],
+	"homepage": "https://github.com/Eight56/php-onedrive",
+	"license": "GPL",
+	"authors": [
+		{
+			"name": "Jonathan Lovatt",
+			"email": "php-skydrive@jlls.info",
+			"homepage": "http://jlls.info",
+			"role": "Developer"
+		},
+	],
     "require": {
         "php": ">=5.3.0"
-    }
+    },
+	"autoload": {
+			"autoload": {
+			  "classmap": ["src/"]
+			}
+		}  
 }

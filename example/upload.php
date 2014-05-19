@@ -1,6 +1,6 @@
 <?php
 require_once "header.inc.php";
-require_once "functions.inc.php";
+require_once "../src/functions.inc.php";
 
 $token = skydrive_tokenstore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
 
