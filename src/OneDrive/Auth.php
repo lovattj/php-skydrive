@@ -83,7 +83,7 @@ class Auth
     {
         $params = array(
             'client_id' => $this->client_id,
-//            'redirect_uri' => $callback_uri,
+            'redirect_uri' => $callback_uri,
             'client_secret' => $this->client_secret,
             'refresh_token' => $refresh,
             'grant_type' => 'refresh_token'
@@ -93,7 +93,7 @@ class Auth
         }
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, self::URL_AUTHORIZE);
+        curl_setopt($ch, CURLOPT_URL, self::URL_TOKEN);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/x-www-form-urlencoded',

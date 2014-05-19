@@ -25,8 +25,8 @@ class TokenStore
             $credentials = json_decode(file_get_contents('app-info.json'),true);
             $oneDriveAuth = new Auth($credentials);
             $refreshed = $oneDriveAuth->refresh_oauth_token($response['refresh_token']);
-            if (TokenStore::save_tokens_to_store($refreshed)) {
-                $newtokens = \OneDrive\TokenStore::get_tokens_from_store();
+            if (self::save_tokens_to_store($refreshed)) {
+                $newtokens = self::get_tokens_from_store();
                 return $newtokens['access_token'];
             }
         } else {
