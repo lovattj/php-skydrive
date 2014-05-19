@@ -33,7 +33,7 @@ class Manager
 
     /**
      * Gets the contents of a SkyDrive folder.
-     * @param $folderid
+     * @param $folderId
      * @param string $sort_by
      * @param string $sort_order
      * @param int $limit
@@ -41,7 +41,7 @@ class Manager
      * @return array
      * @throws OneDriveException
      */
-    public function getFolder($folderid, $sort_by = 'name', $sort_order = 'ascending', $limit = 255, $offset = 0)
+    public function getFolder($folderId, $sort_by = 'name', $sort_order = 'ascending', $limit = 255, $offset = 0)
     {
         $params = array(
             'sort_by' =>$sort_by,
@@ -50,12 +50,8 @@ class Manager
             'limit' => $limit
         );
 
-        $r2s = $this->generateUrl(($folderid ? $folderid : "me/skydrive")."/files",$params);
+        $r2s = $this->generateUrl(($folderId ? $folderId : "me/skydrive")."/files",$params);
         $response = $this->curlGet($r2s);
-
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-        }
 
         $arraytoreturn = array();
         $temparray = array();
@@ -97,9 +93,6 @@ class Manager
     {
         $r2s = $this->generateUrl("me/skydrive/quota");
         $response = $this->curlGet($r2s);
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-        }
         return $response;
     }
 
@@ -111,10 +104,6 @@ class Manager
     {
         $r2s = $this->generateUrl(($folderid?$folderid:'/me/skydrive'));
         $response = $this->curlGet($r2s);
-
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-        }
         return $response;
     }
 
@@ -125,9 +114,6 @@ class Manager
     {
         $r2s = $this->generateUrl($fileId);
         $response = $this->curlGet($r2s);
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-        }
         return $response;
     }
 
@@ -141,11 +127,6 @@ class Manager
     {
         $r2s = $this->generateUrl("$fileId/shared_edit_link");
         $response = $this->curlGet($r2s);
-
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-
-        }
         return $response['link'];
     }
 
@@ -160,9 +141,6 @@ class Manager
     {
         $r2s = $this->generateUrl("$fileid/shared_edit_link");
         $response = $this->curlGet($r2s);
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-        }
         return $response['link'];
     }
 
@@ -172,10 +150,7 @@ class Manager
     {
         $r2s = $this->generateUrl($fileId);
         $response = $this->curlDelete($r2s);
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-        }
-        return true;
+        return $response;
     }
 
     // Downloads a file from SkyDrive to the server.
@@ -189,13 +164,7 @@ class Manager
         $response = $this->curlGet($r2s, "false", "HTTP/1.1 302 Found");
 
         $props = $this->getFileProperties($fileid);
-        $arraytoreturn = array();
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-        }
-        array_push($arraytoreturn, array('properties' => $props, 'data' => $response));
-        return $arraytoreturn;
-
+        return array('properties' => $props, 'data' => $response);
     }
 
 
@@ -207,10 +176,6 @@ class Manager
     {
         $r2s = $this->generateUrl("$folderId/files/$filename");
         $response = $this->curlPut($r2s, $filename);
-
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-        }
         return $response;
     }
 
@@ -250,10 +215,6 @@ class Manager
 
         //upload to OneDrive
         $response = $this->curlPut($r2s, $tempFilename);
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-
-        }
         unlink($tempFilename);
         return $response;
     }
@@ -273,10 +234,7 @@ class Manager
             'description' => $description
         );
 
-        $response = $this->curlPost($r2s, $params, $this->tokens['access_token']);
-        if (array_key_exists('error', $response)) {
-            throw new OneDriveException($response['error'] . " - " . $response['description']);
-        }
+        $response = $this->curlPost($r2s, $params);
         return $response;
     }
 
@@ -284,50 +242,49 @@ class Manager
 
     //<editor-fold desc="curl">
 
-    protected function curlGet($uri, $json_decode_output = "true", $expected_status_code = "HTTP/1.1 200 OK")
+    protected function curlGet($uri)
     {
-        $output = file_get_contents($uri);
-        if ($http_response_header[0] == $expected_status_code) {
-            if ($json_decode_output == "true") {
-                return json_decode($output, true);
-            } else {
-                return $output;
-            }
-        } else {
-            return array(
-                'error' => 'HTTP status code not expected - got ',
-                'description' => substr($http_response_header[0], 9, 3)
-            );
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $uri);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $response = curl_exec($ch);
+
+        if (!$response){
+            throw new \Exception(curl_error($ch),curl_errno($ch));
         }
+
+        if ($tmp = json_decode($response,true)){
+            $response = $tmp;
+        }
+
+        $this->checkResponse($response);
+        return $response;
     }
 
     /**
      * Internally used function to make a POST request to SkyDrive.
      */
-    protected function curlPost($uri, $inputarray, $access_token)
+    protected function curlPost($uri, $inputarray)
     {
         $trimmed = json_encode($inputarray);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $uri);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
-            'Authorization: Bearer ' . $access_token,
+            'Authorization: Bearer ' . $this->tokens['access_token'],
         ));
-        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $trimmed);
-        $output = curl_exec($ch);
-        if (!$output){
+        $response = curl_exec($ch);
+        if (!$response){
             throw new \Exception(curl_error($ch),curl_errno($ch));
         }
 
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpcode == 201) {
-            return json_decode($output, true);
-        } else {
-            return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
-        }
+        $response = json_decode($response, true);
+        $this->checkResponse($response);
+        return $response;
     }
 
 
@@ -359,18 +316,14 @@ class Manager
         //HTTP response code 100 workaround
         //see http://www.php.net/manual/en/function.curl-setopt.php#82418
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
-        $output = curl_exec($ch);
-        if (!$output){
+        $response = curl_exec($ch);
+        if (!$response){
             throw new \Exception(curl_error($ch),curl_errno($ch));
         }
 
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpcode == "200" || $httpcode == "201") {
-            return json_decode($output, true);
-        } else {
-            return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
-        }
-
+        $response = json_decode($response, true);
+        $this->checkResponse($response);
+        return $response;
     }
 
     /**
@@ -388,19 +341,16 @@ class Manager
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
-        $output = curl_exec($ch);
-        if (!$output){
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+        $response = curl_exec($ch);
+        if (!$response){
             throw new \Exception(curl_error($ch),curl_errno($ch));
         }
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        if ($httpcode == 200) {
-            return json_decode($output, true);
-        } else {
-            return array('error' => 'HTTP status code not expected - got ', 'description' => $httpcode);
-        }
+        $response = json_decode($response, true);
+        $this->checkResponse($response);
+        return $response;
     }
     //</editor-fold desc="curl">
 
@@ -409,6 +359,14 @@ class Manager
     {
         $params['access_token'] = $this->tokens['access_token'];
 
-        return self::URL_BASE . $path. '?' .http_build_query($params);
+        return rtrim(self::URL_BASE,'/\\') . '/' . rtrim($path,'/\\'). '?' .http_build_query($params);
+    }
+
+    protected function checkResponse(array $response)
+    {
+        if (array_key_exists('error',$response)){
+            $error = $response['error'];
+            throw new OneDriveException("[{$error['code']}] {$error['message']}");
+        }
     }
 }
