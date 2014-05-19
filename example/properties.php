@@ -13,7 +13,7 @@ if (!$tokens) {
 } else {
 
 	try {
-		$response = $manager->get_file_properties($_GET['fileid']);
+		$response = $manager->getFileProperties($_GET['fileid']);
 		echo "<h3>".$response['name']."</h3>";
 		echo "Size: ".round(($response['size']/1024),2)."Kb<br>";
 		echo "Created: ".$response['created_time']."<br>";

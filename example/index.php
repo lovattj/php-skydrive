@@ -11,7 +11,7 @@ if (!$tokens) { // If no token, prompt to login. Call \OneDrive\Auth::build_oaut
 	include __DIR__.'/template/auth_link.php';
 } else { // Otherwise, if we have a token, use it to create an object and start calling methods to build our page.
 
-	$quotaresp = $manager->get_quota();
+	$quotaresp = $manager->getQuota();
 ?>
 	<p>Quota remaining: <?= $quotaresp['available'];?> Bytes</p>
     <b>Create folder here:
@@ -23,8 +23,8 @@ if (!$tokens) { // If no token, prompt to login. Call \OneDrive\Auth::build_oaut
 <?php
 
 	// Time to prepare and make the request to get the list of files.
-    $response = $manager->get_folder(@$_GET['folderid'], 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null)); // Gets the next 10 items of the specified folder from the specified offset.
-    $properties = $manager->get_folder_properties(@$_GET['folderid']);
+    $response = $manager->getFolder(@$_GET['folderid'], 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null)); // Gets the next 10 items of the specified folder from the specified offset.
+    $properties = $manager->getFolderProperties(@$_GET['folderid']);
 
 	// Now we've got our files and folder properties, time to display them.
     ?>

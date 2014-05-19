@@ -41,7 +41,7 @@ class Manager
      * @return array
      * @throws OneDriveException
      */
-    public function get_folder($folderid, $sort_by = 'name', $sort_order = 'ascending', $limit = 255, $offset = 0)
+    public function getFolder($folderid, $sort_by = 'name', $sort_order = 'ascending', $limit = 255, $offset = 0)
     {
         $params = array(
             'sort_by' =>$sort_by,
@@ -51,7 +51,7 @@ class Manager
         );
 
         $r2s = $this->generateUrl(($folderid ? $folderid : "me/skydrive")."/files",$params);
-        $response = $this->curl_get($r2s);
+        $response = $this->curlGet($r2s);
 
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
@@ -88,13 +88,15 @@ class Manager
         return $arraytoreturn;
     }
 
-    // Gets the remaining quota of your SkyDrive account.
-    // Returns an array containing your total quota and quota available in bytes.
-
-    public function get_quota()
+    /**
+     * Gets the remaining quota of your SkyDrive account.
+     * @return array
+     * @throws OneDriveException
+     */
+    public function getQuota()
     {
         $r2s = $this->generateUrl("me/skydrive/quota");
-        $response = $this->curl_get($r2s);
+        $response = $this->curlGet($r2s);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
@@ -105,10 +107,10 @@ class Manager
     // Returns an array of folder properties.
     // You can pass null as $folderid to get the properties of your root SkyDrive folder.
 
-    public function get_folder_properties($folderid)
+    public function getFolderProperties($folderid)
     {
         $r2s = $this->generateUrl(($folderid?$folderid:'/me/skydrive'));
-        $response = $this->curl_get($r2s);
+        $response = $this->curlGet($r2s);
 
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
@@ -119,10 +121,10 @@ class Manager
     // Gets the properties of the file.
     // Returns an array of file properties.
 
-    public function get_file_properties($fileId)
+    public function getFileProperties($fileId)
     {
         $r2s = $this->generateUrl($fileId);
-        $response = $this->curl_get($r2s);
+        $response = $this->curlGet($r2s);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
@@ -135,10 +137,10 @@ class Manager
      * @return mixed
      * @throws OneDriveException
      */
-    public function get_shared_read_link($fileId)
+    public function getSharedReadLink($fileId)
     {
         $r2s = $this->generateUrl("$fileId/shared_edit_link");
-        $response = $this->curl_get($r2s);
+        $response = $this->curlGet($r2s);
 
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
@@ -154,10 +156,10 @@ class Manager
      * @return mixed
      * @throws OneDriveException
      */
-    public function get_shared_edit_link($fileid)
+    public function getSharedEditLink($fileid)
     {
         $r2s = $this->generateUrl("$fileid/shared_edit_link");
-        $response = $this->curl_get($r2s);
+        $response = $this->curlGet($r2s);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
@@ -166,10 +168,10 @@ class Manager
 
     // Deletes an object.
 
-    public function delete_object($fileId)
+    public function deleteObject($fileId)
     {
         $r2s = $this->generateUrl($fileId);
-        $response = $this->curl_delete($r2s);
+        $response = $this->curlDelete($r2s);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
@@ -184,9 +186,9 @@ class Manager
     public function download($fileid)
     {
         $r2s = $this->generateUrl("$fileid/content");
-        $response = $this->curl_get($r2s, "false", "HTTP/1.1 302 Found");
+        $response = $this->curlGet($r2s, "false", "HTTP/1.1 302 Found");
 
-        $props = $this->get_file_properties($fileid);
+        $props = $this->getFileProperties($fileid);
         $arraytoreturn = array();
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
@@ -201,10 +203,10 @@ class Manager
     // Pass the $folderid of the folder you want to send the file to, and the $filename path to the file.
     // Also use this function for modifying files, it will overwrite a currently existing file.
 
-    public function put_file($folderId, $filename)
+    public function putFile($folderId, $filename)
     {
         $r2s = $this->generateUrl("$folderId/files/$filename");
-        $response = $this->curl_put($r2s, $filename);
+        $response = $this->curlPut($r2s, $filename);
 
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
@@ -221,7 +223,7 @@ class Manager
      * @throws OneDriveException
      * @return array|mixed
      */
-    public function put_file_from_url($sourceUrl, $folderId, $filename)
+    public function putFileFromUrl($sourceUrl, $folderId, $filename)
     {
 //        $r2s = self::URL_BASE . $folderId . "/files/" . $filename . "?access_token=" . $this->tokens['access_token'];
 
@@ -247,7 +249,7 @@ class Manager
         fclose($temp);
 
         //upload to OneDrive
-        $response = $this->curl_put($r2s, $tempFilename);
+        $response = $this->curlPut($r2s, $tempFilename);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
 
@@ -262,7 +264,7 @@ class Manager
     // Also pass $foldername as the name for the new folder and $description as the description.
     // Returns the new folder metadata or throws an exception.
 
-    public function create_folder($folderid, $foldername, $description = "")
+    public function createFolder($folderid, $foldername, $description = "")
     {
         $r2s = self::URL_BASE . ($folderid? $folderid:"me/skydrive");
 
@@ -271,7 +273,7 @@ class Manager
             'description' => $description
         );
 
-        $response = $this->curl_post($r2s, $params, $this->tokens['access_token']);
+        $response = $this->curlPost($r2s, $params, $this->tokens['access_token']);
         if (array_key_exists('error', $response)) {
             throw new OneDriveException($response['error'] . " - " . $response['description']);
         }
@@ -282,7 +284,7 @@ class Manager
 
     //<editor-fold desc="curl">
 
-    protected function curl_get($uri, $json_decode_output = "true", $expected_status_code = "HTTP/1.1 200 OK")
+    protected function curlGet($uri, $json_decode_output = "true", $expected_status_code = "HTTP/1.1 200 OK")
     {
         $output = file_get_contents($uri);
         if ($http_response_header[0] == $expected_status_code) {
@@ -302,7 +304,7 @@ class Manager
     /**
      * Internally used function to make a POST request to SkyDrive.
      */
-    protected function curl_post($uri, $inputarray, $access_token)
+    protected function curlPost($uri, $inputarray, $access_token)
     {
         $trimmed = json_encode($inputarray);
 
@@ -336,7 +338,7 @@ class Manager
      * @throws \Exception
      * @return array|mixed
      */
-    protected function curl_put($uri, $fp)
+    protected function curlPut($uri, $fp)
     {
         $output = "";
         $pointer = fopen($fp, 'r+');
@@ -377,7 +379,7 @@ class Manager
      * @throws \Exception
      * @return array|mixed
      */
-    protected function curl_delete($uri)
+    protected function curlDelete($uri)
     {
         $ch = curl_init($uri);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
@@ -407,9 +409,6 @@ class Manager
     {
         $params['access_token'] = $this->tokens['access_token'];
 
-        return http_build_url(self::URL_BASE,array(
-            "path"  => $path,
-            "query" => http_build_query($params)
-        ));
+        return self::URL_BASE . $path. '?' .http_build_query($params);
     }
 }

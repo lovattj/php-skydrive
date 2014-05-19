@@ -13,9 +13,9 @@ if (!$tokens) { // If no token, prompt to login. Call \OneDrive\Auth::build_oaut
 	} else {
 		try {
 			if (empty($_POST['currentfolderid'])) {
-				$response = $manager->create_folder(null, $_POST['foldername'], 'Description');
+				$response = $manager->createFolder(null, $_POST['foldername'], 'Description');
 			} else {
-				$response = $manager->create_folder($_POST['currentfolderid'], $_POST['foldername'], 'Description');
+				$response = $manager->createFolder($_POST['currentfolderid'], $_POST['foldername'], 'Description');
 			}
 			// Folder was created, return metadata.
 			print_r($response);
