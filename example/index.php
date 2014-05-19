@@ -2,52 +2,48 @@
 // This is an example page that will display the contents of a given SkyDrive folder.
 // If an access_token is not available, it'll direct the user to login with SkyDrive.
 require_once __DIR__.'/../vendor/autoload.php';
-ob_clean();
 
 include __DIR__.'/template/init_manager.php';
 
+ob_clean();
 
-if (!$tokens) { // If no token, prompt to login. Call \OneDrive\Auth::build_oauth_url() to get the redirect URL.
-	include __DIR__.'/template/auth_link.php';
-} else { // Otherwise, if we have a token, use it to create an object and start calling methods to build our page.
-
-	$quotaresp = $manager->getQuota();
+$quotaresp = $manager->getQuota();
 ?>
-	<p>Quota remaining: <?= $quotaresp['available'];?> Bytes</p>
-    <b>Create folder here:
-	<form method='post' action='createfolder.php' style="display: inline-block">
-        <input type='hidden' name='currentfolderid' value='<?= isset($_GET['folderid'])?$_GET['folderid']:''?>'>
-        <input type='text' name='foldername' placeholder='Folder Name'>
-        <input type='submit' name='submit' value='submit'>
-    </form>
+<p>Quota remaining: <?= $quotaresp['available'];?> Bytes</p>
+<b>Create folder here:
+<form method='post' action='createfolder.php' style="display: inline-block">
+    <input type='hidden' name='currentfolderid' value='<?= isset($_GET['folderid'])?$_GET['folderid']:''?>'>
+    <input type='text' name='foldername' placeholder='Folder Name'>
+    <input type='submit' name='submit' value='submit'>
+</form>
 <?php
 
-	// Time to prepare and make the request to get the list of files.
-    $response = $manager->getFolder(@$_GET['folderid'], 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null)); // Gets the next 10 items of the specified folder from the specified offset.
-    $properties = $manager->getFolderProperties(@$_GET['folderid']);
+// Time to prepare and make the request to get the list of files.
+$response = $manager->getFolder(@$_GET['folderid'], 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null)); // Gets the next 10 items of the specified folder from the specified offset.
+$properties = $manager->getFolderProperties(@$_GET['folderid']);
 
-	// Now we've got our files and folder properties, time to display them.
-    ?>
-    <hr>
-    <div id="bodyheader">
-        <?php if (isset($properties['parent_id'])):?>
-            <a href="index.php?folderid=<?=$properties['parent_id']?>">...</a>
-            <span>\</span>
-        <?php endif; ?>
-        <b><?= $properties['name'] ?> </b>
-	</div>
+// Now we've got our files and folder properties, time to display them.
+?>
+<hr>
+<div id="bodyheader">
+    <?php if (isset($properties['parent_id'])):?>
+        <a href="index.php?folderid=<?=$properties['parent_id']?>">...</a>
+        <span>\</span>
+    <?php endif; ?>
+    <b><?= $properties['name'] ?> </b>
+</div>
 <?php
-	echoFolderContent($response);
+echoFolderContent($response);
 
-    if ($response['paging']['nextoffset'] != 0) {
-        echo "<a href='index.php?folderid=".$_GET['folderid']."&offset=".$response['paging']['nextoffset']."'>See More</a>";
-    } else {
-        echo "No more files in folder";
-    }
-    echo "<br>";
-    echo "<a href='logout.php'>Log Out</a>";
-	
+if ($response['paging']['nextoffset'] != 0) {
+    echo "<a href='index.php?folderid=".$_GET['folderid']."&offset=".$response['paging']['nextoffset']."'>See More</a>";
+} else {
+    echo "No more files in folder";
 }
+echo "<br>";
+echo "<a href='logout.php'>Log Out</a>";
+	
+
 
 $content = ob_get_contents();
 ob_end_clean();
@@ -65,6 +61,7 @@ function echoFolderContent($response){
             <td><?= $item['created_time']; ?></td>
             <td><?= $item['updated_time']; ?></td>
             <td><a href="<?= $item['link']; ?>">link</a></td>
+            <td><a href="/download.php?fileid=<?= $item['id'];?>">download</td>
         </tr>
         <?php
     }

@@ -17,7 +17,7 @@ class Manager
      */
     protected $tokens = '';
 
-    public function __construct($credentials,$passed_access_token)
+    public function __construct($credentials,$passed_access_token=null)
     {
         $this->auth = new Auth($credentials);
         $this->tokens = $passed_access_token;
@@ -174,13 +174,13 @@ class Manager
     // Returns a multidimensional array:
     // ['properties'] contains the file metadata and ['data'] contains the raw file data.
 
-    public function download($fileid)
+    public function download($fileId)
     {
-        $r2s = $this->generateUrl("$fileid/content");
-        $response = $this->curlGet($r2s, "false", "HTTP/1.1 302 Found");
+        $r2s = $this->generateUrl("$fileId/content");
+        $content = file_get_contents($r2s);
 
-        $props = $this->getFileProperties($fileid);
-        return array('properties' => $props, 'data' => $response);
+        $props = $this->getFileProperties($fileId);
+        return array('properties' => $props, 'data' => $content);
     }
 
 
@@ -263,7 +263,7 @@ class Manager
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
 
-        if (!$response){
+        if ($response === false){
             throw new \Exception(curl_error($ch),curl_errno($ch));
         }
 
@@ -376,9 +376,9 @@ class Manager
         return rtrim(self::URL_BASE,'/\\') . '/' . rtrim($path,'/\\'). '?' .http_build_query($params);
     }
 
-    protected function checkResponse(array $response,$code)
+    protected function checkResponse($response,$code)
     {
-        if (array_key_exists('error',$response)){
+        if (is_array($response) && array_key_exists('error',$response)){
             $error = $response['error'];
             throw new OneDriveException("[{$error['code']}] {$error['message']}",$code);
         }

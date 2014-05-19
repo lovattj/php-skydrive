@@ -11,7 +11,7 @@ if (!file_exists('app-info.json')){
 }
 
 $credentials = json_decode(file_get_contents('app-info.json'),true);
-$oneDriveAuth = new \OneDrive\Auth($credentials);
+$manager = new \OneDrive\Manager($credentials);
 
 $redirectUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/callback.php';
 
@@ -19,7 +19,7 @@ if (empty($_GET['code'])){
     exit('Query parameter `code` not defined');
 }
 
-$response = $oneDriveAuth->get_oauth_token($_GET['code'],$redirectUrl);
+$response = $manager->getAuth()->get_oauth_token($_GET['code'],$redirectUrl);
 var_dump($response);
 if (\OneDrive\TokenStore::save_tokens_to_store($response))
     echo '<p>Authefication is success</p>';

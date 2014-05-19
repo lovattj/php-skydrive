@@ -1,26 +1,18 @@
 <?php
 require_once __DIR__.'/../vendor/autoload.php';
-ob_start();
 
 include __DIR__.'/template/init_manager.php';
 
-if (!$tokens) {
-    include __DIR__.'/template/auth_link.php';
-} else {
-	try {
-		$response = $manager->download($_GET['fileid']);
-		ob_end_clean();  
-		header('Content-Type: application/octet-stream');
-		header('Content-Length: '.$response[0]['properties']['size']);
-		header('Content-Description: File Transfer');
-		header('Content-Disposition: attachment; filename='.$response[0]['properties']['name']);		
-		$stdout = fopen('php://output', 'r+');
-		fwrite($stdout, $response[0]['data']);
-	} catch (Exception $e) {
-		// An error occured, print HTTP status code and description.
-		echo "Error: ".$e->getMessage();
-	}
-}
-$content = ob_get_contents();
-ob_end_clean();
-require_once __DIR__."/template/index.php";
+//ob_start();
+
+$response = $manager->download($_GET['fileid']);
+header('Content-Type: application/octet-stream');
+header('Content-Length: '.$response['properties']['size']);
+header('Content-Description: File Transfer');
+header('Content-Disposition: attachment; filename='.$response['properties']['name']);
+$stdout = fopen('php://output', 'r+');
+fwrite($stdout, $response['data']);
+
+//$content = ob_get_contents();
+//ob_end_clean();
+//require_once __DIR__."/template/index.php";
