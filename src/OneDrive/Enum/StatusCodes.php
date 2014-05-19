@@ -1,5 +1,5 @@
 <?php
-namespace OneDrive;
+namespace OneDrive\Enum;
 
 class StatusCodes {
     /**

@@ -1,6 +1,8 @@
 <?php
 namespace OneDrive;
 
+use OneDrive\Enum\StatusCodes;
+
 class Manager
 {
     const URL_BASE = "https://apis.live.net/v5.0/";
@@ -27,6 +29,20 @@ class Manager
     public function getAuth()
     {
         return $this->auth;
+    }
+
+    /**
+     * Checking is token valid. If no - refresh it
+     */
+    public function refreshToken()
+    {   //todo thing about global catch and refresh
+        try {
+            $this->getQuota();
+        }catch(OneDriveException $exc){
+            if ($exc->getCode() == StatusCodes::REQUEST_TOKEN_EXPIRED){
+                $this->tokens = $this->auth->refresh_oauth_token($this->tokens['refresh_token']);
+            }
+        }
     }
 
     //<editor-fold desc="filesystem">
@@ -190,8 +206,6 @@ class Manager
      */
     public function putFileFromUrl($sourceUrl, $folderId, $filename)
     {
-//        $r2s = self::URL_BASE . $folderId . "/files/" . $filename . "?access_token=" . $this->tokens['access_token'];
-
         $r2s = $this->generateUrl("$folderId/files/$filename");
 
         $chunkSizeBytes = 1 * 1024 * 1024; //1MB
@@ -257,7 +271,7 @@ class Manager
             $response = $tmp;
         }
 
-        $this->checkResponse($response);
+        $this->checkResponse($response,curl_getinfo($ch, CURLINFO_HTTP_CODE));
         return $response;
     }
 
@@ -283,7 +297,7 @@ class Manager
         }
 
         $response = json_decode($response, true);
-        $this->checkResponse($response);
+        $this->checkResponse($response,curl_getinfo($ch, CURLINFO_HTTP_CODE));
         return $response;
     }
 
@@ -322,7 +336,7 @@ class Manager
         }
 
         $response = json_decode($response, true);
-        $this->checkResponse($response);
+        $this->checkResponse($response,curl_getinfo($ch, CURLINFO_HTTP_CODE));
         return $response;
     }
 
@@ -349,7 +363,7 @@ class Manager
         }
 
         $response = json_decode($response, true);
-        $this->checkResponse($response);
+        $this->checkResponse($response,curl_getinfo($ch, CURLINFO_HTTP_CODE));
         return $response;
     }
     //</editor-fold desc="curl">
@@ -362,11 +376,11 @@ class Manager
         return rtrim(self::URL_BASE,'/\\') . '/' . rtrim($path,'/\\'). '?' .http_build_query($params);
     }
 
-    protected function checkResponse(array $response)
+    protected function checkResponse(array $response,$code)
     {
         if (array_key_exists('error',$response)){
             $error = $response['error'];
-            throw new OneDriveException("[{$error['code']}] {$error['message']}");
+            throw new OneDriveException("[{$error['code']}] {$error['message']}",$code);
         }
     }
 }

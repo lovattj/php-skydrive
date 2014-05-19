@@ -34,8 +34,7 @@ class Auth
             'response_type' => 'code',
             'redirect_uri' => $callback_uri
         );
-        $response = self::URL_AUTHORIZE . '?' . http_build_query($params);
-        return $response;
+        return self::URL_AUTHORIZE . '?' . http_build_query($params);
     }
 
     /**
@@ -66,12 +65,12 @@ class Auth
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
-        $curlRes = curl_exec($ch);
-        if (!$curlRes){
+        $response = curl_exec($ch);
+        if (!$response){
             throw new \Exception(curl_error($ch),curl_errno($ch));
         }
 
-        return json_decode($curlRes, true);
+        return json_decode($response, true);
     }
 
     /**
@@ -83,7 +82,7 @@ class Auth
     {
         $params = array(
             'client_id' => $this->client_id,
-            'redirect_uri' => $callback_uri,
+//            'redirect_uri' => $callback_uri,
             'client_secret' => $this->client_secret,
             'refresh_token' => $refresh,
             'grant_type' => 'refresh_token'
@@ -101,12 +100,12 @@ class Auth
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
-        $curlRes = curl_exec($ch);
-        if (!$curlRes){
+        $response = curl_exec($ch);
+        if (!$response){
             throw new \Exception(curl_error($ch),curl_errno($ch));
         }
 
-        return json_decode($curlRes, true);
+        return json_decode($response, true);
     }
 
 } 
