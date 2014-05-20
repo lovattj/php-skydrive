@@ -21,7 +21,7 @@ if (empty($_GET['code'])){
 
 $response = $manager->getAuth()->getOauthToken($_GET['code'],$redirectUrl);
 var_dump($response);
-file_put_contents('app-tokens.json',$response);
+file_put_contents('app-tokens.json',json_encode($response));
 echo '<p>Authefication is success</p>';
 
 $content = ob_get_contents();
