@@ -23,7 +23,7 @@ $quotaresp = $manager->getQuota();
 <?php
 
 // Time to prepare and make the request to get the list of files.
-$response = $manager->getFolder(@$_GET['folderid'], 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null)); // Gets the next 10 items of the specified folder from the specified offset.
+$response = $manager->getFolderFiles(@$_GET['folderid'], 'name', 'ascending', 10, (isset($_GET['offset'])?$_GET['offset']:null)); // Gets the next 10 items of the specified folder from the specified offset.
 $properties = $manager->getFolderProperties(@$_GET['folderid']);
 
 // Now we've got our files and folder properties, time to display them.
@@ -39,8 +39,9 @@ $properties = $manager->getFolderProperties(@$_GET['folderid']);
 <?php
 echoFolderContent($response);
 
-if ($response['paging']['nextoffset'] != 0) {
-    echo "<a href='index.php?folderid=".$_GET['folderid']."&offset=".$response['paging']['nextoffset']."'>See More</a>";
+if (!empty($response['paging']['nextoffset'])) {
+    printf("<a href='index.php?folderid={$_GET['folderid']}'>See More</a>",
+        isset($response['paging']['nextoffset']) ? "&offset={$response['paging']['nextoffset']}":'');
 } else {
     echo "No more files in folder";
 }

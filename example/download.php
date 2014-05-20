@@ -5,7 +5,7 @@ include __DIR__.'/template/init_manager.php';
 
 //ob_start();
 
-$response = $manager->download($_GET['fileid']);
+$response = $manager->downloadFile($_GET['fileid']);
 header('Content-Type: application/octet-stream');
 header('Content-Length: '.$response['properties']['size']);
 header('Content-Description: File Transfer');

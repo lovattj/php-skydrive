@@ -53,6 +53,18 @@ class Manager
     //<editor-fold desc="filesystem">
 
     /**
+     * Gets the remaining quota of your SkyDrive account.
+     * @return array
+     * @throws OneDriveException
+     */
+    public function getQuota()
+    {
+        $r2s = $this->generateUrl("me/skydrive/quota");
+        $response = $this->curlGet($r2s);
+        return $response;
+    }
+
+    /**
      * Gets the contents of a SkyDrive folder.
      * @param $folderId
      * @param string $sort_by
@@ -62,7 +74,7 @@ class Manager
      * @return array
      * @throws OneDriveException
      */
-    public function getFolder($folderId, $sort_by = 'name', $sort_order = 'ascending', $limit = 255, $offset = 0)
+    public function getFolderFiles($folderId, $sort_by = 'name', $sort_order = 'ascending', $limit = 255, $offset = 0)
     {
         $params = array(
             'sort_by' =>$sort_by,
@@ -78,31 +90,22 @@ class Manager
     }
 
     /**
-     * Gets the remaining quota of your SkyDrive account.
-     * @return array
-     * @throws OneDriveException
+     * Gets the properties of the folder.
+     * @param null $folderId
+     * @return mixed
      */
-    public function getQuota()
+    public function getFolderProperties($folderId=null)
     {
-        $r2s = $this->generateUrl("me/skydrive/quota");
+        $r2s = $this->generateUrl($folderId?$folderId:'/me/skydrive');
         $response = $this->curlGet($r2s);
         return $response;
     }
 
-    // Gets the properties of the folder.
-    // Returns an array of folder properties.
-    // You can pass null as $folderid to get the properties of your root SkyDrive folder.
-
-    public function getFolderProperties($folderid=null)
-    {
-        $r2s = $this->generateUrl(($folderid?$folderid:'/me/skydrive'));
-        $response = $this->curlGet($r2s);
-        return $response;
-    }
-
-    // Gets the properties of the file.
-    // Returns an array of file properties.
-
+    /**
+     * Gets the properties of the file.
+     * @param $fileId
+     * @return mixed
+     */
     public function getFileProperties($fileId)
     {
         $r2s = $this->generateUrl($fileId);
@@ -146,12 +149,12 @@ class Manager
         return $response;
     }
 
-    // Downloads a file from SkyDrive to the server.
-    // Pass in a file ID.
-    // Returns a multidimensional array:
-    // ['properties'] contains the file metadata and ['data'] contains the raw file data.
-
-    public function download($fileId)
+    /**
+     * Downloads a file from SkyDrive to the server.
+     * @param $fileId
+     * @return array
+     */
+    public function downloadFile($fileId)
     {
         $r2s = $this->generateUrl("$fileId/content");
         $content = file_get_contents($r2s);
@@ -160,12 +163,13 @@ class Manager
         return array('properties' => $props, 'data' => $content);
     }
 
-
-    // Uploads a file from disk.
-    // Pass the $folderid of the folder you want to send the file to, and the $filename path to the file.
-    // Also use this function for modifying files, it will overwrite a currently existing file.
-
-    public function putFile($folderId, $filename)
+    /**
+     * Uploads a file from disk.
+     * @param $folderId
+     * @param $filename
+     * @return array|mixed
+     */
+    public function uploadFile($folderId, $filename)
     {
         $r2s = $this->generateUrl("$folderId/files/$filename");
         $response = $this->curlPut($r2s, $filename);
@@ -181,7 +185,7 @@ class Manager
      * @throws OneDriveException
      * @return array|mixed
      */
-    public function putFileFromUrl($sourceUrl, $folderId, $filename)
+    public function uploadFileFromUrl($sourceUrl, $folderId, $filename)
     {
         $r2s = $this->generateUrl("$folderId/files/$filename");
 
@@ -210,12 +214,13 @@ class Manager
         return $response;
     }
 
-
-    // Creates a folder.
-    // Pass $folderid as the containing folder (or 'null' to create the folder under the root).
-    // Also pass $foldername as the name for the new folder and $description as the description.
-    // Returns the new folder metadata or throws an exception.
-
+    /**
+     * Creates a folder.
+     * @param $folderid
+     * @param $foldername
+     * @param string $description
+     * @return mixed
+     */
     public function createFolder($folderid, $foldername, $description = "")
     {
         $r2s = self::URL_BASE . ($folderid? $folderid:"me/skydrive");

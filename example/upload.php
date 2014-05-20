@@ -5,7 +5,7 @@ include __DIR__.'/template/init_manager.php';
 
 ob_start();
 
-$response = $manager->putFile($_GET['folderid'], '/file/to/put');
+$response = $manager->uploadFile($_GET['folderid'], '/file/to/put');
 // File was uploaded, return metadata.
 print_r($response);
 
