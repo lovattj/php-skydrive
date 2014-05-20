@@ -23,14 +23,20 @@ class Auth
     }
 
     /**
-     * Builds a URL for the user to log in to SkyDrive and get the authorization code, which can then be
-     * passed onto get_oauth_token to get a valid oAuth token.
+     * Builds a URL for the user to log in to SkyDrive and get the authorization code, which can then be passed onto get_oauth_token to get a valid oAuth token.
+     * @param $callback_uri
+     * @param string|array $scopes - Can be array of \OneDrive\Enum\Scopes
+     * @return string
      */
-    public function build_oauth_url($callback_uri)
+    public function buildOauthUrl($callback_uri, $scopes = 'wl.basic wl.signin wl.skydrive_update wl.offline_access')
     {
+        if (is_array($scopes)){
+            $scopes = implode(' ',$scopes);
+        }
+
         $params = array(
             'client_id' =>$this->client_id,
-            'scope' => 'wl.signin wl.offline_access wl.skydrive_update wl.basic',
+            'scope' => $scopes,
             'response_type' => 'code',
             'redirect_uri' => $callback_uri
         );
@@ -46,7 +52,7 @@ class Auth
      * @return array
      * @throws \Exception
      */
-    public function get_oauth_token($authCode,$callback_uri)
+    public function getOauthToken($authCode,$callback_uri)
     {
         $params = array(
             'client_id' => $this->client_id,
@@ -78,7 +84,7 @@ class Auth
      * Pass in the refresh token obtained from a previous oAuth request.
      * Returns the new oAuth token and an expiry time in seconds from now (usually 3600 but may vary in future).
      */
-    public function refresh_oauth_token($refresh,$callback_uri=null)
+    public function refreshOauthToken($refresh,$callback_uri=null)
     {
         $params = array(
             'client_id' => $this->client_id,

@@ -14,7 +14,7 @@ if (!$tokens) {
 ?>
     <div>
         <img src="statics/key-icon.png" width="32px" style="vertical-align: middle;">
-        <span style="vertical-align: middle;"><a href="<?= $manager->getAuth()->build_oauth_url($redirectUrl); ?>">Login with SkyDrive</a></span>
+        <span style="vertical-align: middle;"><a href="<?= $manager->getAuth()->buildOauthUrl($redirectUrl); ?>">Login with SkyDrive</a></span>
     </div>
 <?php
     exit();

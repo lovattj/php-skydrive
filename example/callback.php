@@ -19,7 +19,7 @@ if (empty($_GET['code'])){
     exit('Query parameter `code` not defined');
 }
 
-$response = $manager->getAuth()->get_oauth_token($_GET['code'],$redirectUrl);
+$response = $manager->getAuth()->getOauthToken($_GET['code'],$redirectUrl);
 var_dump($response);
 file_put_contents('app-tokens.json',$response);
 echo '<p>Authefication is success</p>';

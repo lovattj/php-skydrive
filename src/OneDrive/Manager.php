@@ -40,7 +40,7 @@ class Manager
             $this->getQuota();
         }catch(OneDriveException $exc){
             if ($exc->getCode() == StatusCodes::REQUEST_TOKEN_EXPIRED){
-                $this->tokens = $this->auth->refresh_oauth_token($this->tokens['refresh_token']);
+                $this->tokens = $this->auth->refreshOauthToken($this->tokens['refresh_token']);
             }
         }
     }
