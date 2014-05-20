@@ -30,4 +30,9 @@ abstract class Entity
         }
         return null;
     }
+
+    public function getFields()
+    {
+        return $this->fields;
+    }
 } 

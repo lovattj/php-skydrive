@@ -1,6 +1,9 @@
 <?php
 namespace OneDrive;
 
+use OneDrive\Entity\File;
+use OneDrive\Entity\Folder;
+use OneDrive\Entity\FolderFiles;
 use OneDrive\Enum\StatusCodes;
 
 /**
@@ -71,7 +74,7 @@ class Manager
      * @param string $sort_order
      * @param int $limit
      * @param int $offset
-     * @return array
+     * @return FolderFiles
      * @throws OneDriveException
      */
     public function getFolderFiles($folderId, $sort_by = 'name', $sort_order = 'ascending', $limit = 255, $offset = 0)
@@ -86,39 +89,31 @@ class Manager
         $r2s = $this->generateUrl(($folderId ? $folderId : "me/skydrive")."/files",$params);
         $response = $this->curlGet($r2s);
 
-        if ($response['paging']){
-            foreach ($response['paging'] as &$page){
-                $urlObj = parse_url($page);
-                parse_str($urlObj['query'],$page);
-            }
-            unset($page);
-        }
-
-        return $response;
+        return new FolderFiles($response);
     }
 
     /**
      * Gets the properties of the folder.
      * @param null $folderId
-     * @return mixed
+     * @return Folder
      */
     public function getFolderProperties($folderId=null)
     {
         $r2s = $this->generateUrl($folderId?$folderId:'/me/skydrive');
         $response = $this->curlGet($r2s);
-        return $response;
+        return new Folder($response);
     }
 
     /**
      * Gets the properties of the file.
      * @param $fileId
-     * @return mixed
+     * @return File
      */
     public function getFileProperties($fileId)
     {
         $r2s = $this->generateUrl($fileId);
         $response = $this->curlGet($r2s);
-        return $response;
+        return new File($response);
     }
 
     /**
@@ -163,7 +158,7 @@ class Manager
      * @return array
      */
     public function downloadFile($fileId)
-    {
+    { //todo download by chunks
         $r2s = $this->generateUrl("$fileId/content");
         $content = file_get_contents($r2s);
 

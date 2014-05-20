@@ -15,8 +15,7 @@ namespace OneDrive\Entity;
  * @property-read int $size - The size, in bytes, of the audio.
  * @property-read string $upload_location - The URL to use to upload a new audio to overwrite the existing audio.
  * @property-read int $comments_count - The number of comments associated with the audio.
- * @property-read bool $comments_enabled - A value that indicates whether comments are enabled for the audio. If  comments
-can be made, this value is true; otherwise, it is false.
+ * @property-read bool $comments_enabled - A value that indicates whether comments are enabled for the audio. If  comments can be made, this value is true; otherwise, it is false.
  * @property-read bool $is_embeddable - A value that indicates whether this audio can be embedded. If this audio can be embedded, this value is true; otherwise, it is false.
  * @property-read string $source - The URL to use to download the audio from OneDrive.
  * @property-read string $link - A URL to view the item on OneDrive.
@@ -34,6 +33,6 @@ can be made, this value is true; otherwise, it is false.
  * @property-read string $updated_time - The time, in ISO 8601 format, at which the audio was last updated.
 
  */
-class Audio {
+class Audio extends Entity{
 
 } 

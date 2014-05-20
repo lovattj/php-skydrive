@@ -23,6 +23,6 @@ namespace OneDrive\Entity;
  * @property-read array $shared_with - Permissions info for the folder. Requires the wl.skydrive scope.
  * @property string $sort_by - Sorts the items to specify the following criteria: updated, name, size, or default.
  */
-class Folder {
+class Folder extends Entity{
 
 } 

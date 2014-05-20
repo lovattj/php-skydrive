@@ -30,6 +30,6 @@ namespace OneDrive\Entity;
  * @property-read string $created_time - The time, in ISO 8601 format, at which the video was created.
  * @property-read string $updated_time - The time, in ISO 8601 format, at which the video was last updated.
  */
-class Video {
+class Video extends Entity{
 
 } 

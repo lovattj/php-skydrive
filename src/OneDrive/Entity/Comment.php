@@ -12,6 +12,6 @@ namespace OneDrive\Entity;
  * @property string $message - The text of the comment. The maximum length of a comment is 10,000 characters. Required.
  * @property-read string $created_time - The time, in ISO 8601 format, at which the comment was created.
  */
-class Comment {
+class Comment extends Entity{
 
 } 

@@ -23,6 +23,6 @@ namespace OneDrive\Entity;
  * @property-read string $client_updated_time - The time, in ISO 8601 format, that the file was last updated.
 
  */
-class Album {
+class Album extends Entity{
 
 } 

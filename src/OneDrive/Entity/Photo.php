@@ -37,6 +37,6 @@ namespace OneDrive\Entity;
  * @property-read string $created_time - The time, in ISO 8601 format, at which the photo was created.
  * @property-read string $updated_time - The time, in ISO 8601 format, at which the photo was last updated.
  */
-class Photo {
+class Photo extends Entity{
 
 } 
