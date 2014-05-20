@@ -86,6 +86,14 @@ class Manager
         $r2s = $this->generateUrl(($folderId ? $folderId : "me/skydrive")."/files",$params);
         $response = $this->curlGet($r2s);
 
+        if ($response['paging']){
+            foreach ($response['paging'] as &$page){
+                $urlObj = parse_url($page);
+                parse_str($urlObj['query'],$page);
+            }
+            unset($page);
+        }
+
         return $response;
     }
 
