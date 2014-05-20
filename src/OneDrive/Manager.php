@@ -74,35 +74,7 @@ class Manager
         $r2s = $this->generateUrl(($folderId ? $folderId : "me/skydrive")."/files",$params);
         $response = $this->curlGet($r2s);
 
-        $arraytoreturn = array();
-        $temparray = array();
-        if (isset($response['paging']['next'])) {
-            parse_str($response['paging']['next'], $parseout);
-            $numerical = array_values($parseout);
-        }
-        if (isset($response['paging']['previous'])) {
-            parse_str($response['paging']['previous'], $parseout1);
-            $numerical1 = array_values($parseout1);
-        }
-
-        foreach ($response as $subarray) {
-            foreach ($subarray as $item) {
-                if (array_key_exists('id', $item)) {
-                    array_push($temparray, $item);
-                }
-            }
-        }
-        $arraytoreturn['data'] = $temparray;
-        if (isset($numerical)) {
-            if ($numerical1[0]) {
-                $arraytoreturn['paging'] = array('previousoffset' => $numerical1[0], 'nextoffset' => $numerical[0]);
-            } else {
-                $arraytoreturn['paging'] = array('previousoffset' => 0, 'nextoffset' => $numerical[0]);
-            }
-        } else {
-            $arraytoreturn['paging'] = array('previousoffset' => 0, 'nextoffset' => 0);
-        }
-        return $arraytoreturn;
+        return $response;
     }
 
     /**
