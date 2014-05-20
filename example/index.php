@@ -1,6 +1,10 @@
 <?php
 // This is an example page that will display the contents of a given SkyDrive folder.
 // If an access_token is not available, it'll direct the user to login with SkyDrive.
+if (!file_exists(__DIR__.'/../vendor/')){
+    exit('vеndor dir is not exists. use `composer update`');
+}
+
 require_once __DIR__.'/../vendor/autoload.php';
 
 include __DIR__.'/template/init_manager.php';
