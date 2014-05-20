@@ -37,7 +37,7 @@ $properties = $manager->getFolderProperties(@$_GET['folderid']);
     <b><?= $properties['name'] ?> </b>
 </div>
 <?php
-echoFolderContent($response['data']);
+echoFolderContent($response);
 
 if ($response['paging']['nextoffset'] != 0) {
     echo "<a href='index.php?folderid=".$_GET['folderid']."&offset=".$response['paging']['nextoffset']."'>See More</a>";

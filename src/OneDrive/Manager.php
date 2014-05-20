@@ -93,7 +93,7 @@ class Manager
     // Returns an array of folder properties.
     // You can pass null as $folderid to get the properties of your root SkyDrive folder.
 
-    public function getFolderProperties($folderid)
+    public function getFolderProperties($folderid=null)
     {
         $r2s = $this->generateUrl(($folderid?$folderid:'/me/skydrive'));
         $response = $this->curlGet($r2s);
@@ -118,7 +118,7 @@ class Manager
      */
     public function getSharedReadLink($fileId)
     {
-        $r2s = $this->generateUrl("$fileId/shared_edit_link");
+        $r2s = $this->generateUrl("$fileId/shared_read_link");
         $response = $this->curlGet($r2s);
         return $response['link'];
     }
