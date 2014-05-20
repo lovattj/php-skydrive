@@ -1,6 +1,11 @@
 <?php
 namespace OneDrive;
 
+/**
+ * Class Auth
+ * @package OneDrive
+ * @see http://msdn.microsoft.com/en-us/library/dn659750.aspx
+ */
 class Auth
 {
     const URL_AUTHORIZE = 'https://login.live.com/oauth20_authorize.srf';

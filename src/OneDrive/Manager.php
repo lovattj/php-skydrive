@@ -3,6 +3,11 @@ namespace OneDrive;
 
 use OneDrive\Enum\StatusCodes;
 
+/**
+ * Class Manager
+ * @package OneDrive
+ * @see http://msdn.microsoft.com/en-us/library/dn659752.aspx
+ */
 class Manager
 {
     const URL_BASE = "https://apis.live.net/v5.0/";
