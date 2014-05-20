@@ -4,12 +4,12 @@ if (!file_exists('app-info.json')){
 }
 
 $credentials = json_decode(file_get_contents('app-info.json'),true);
-$tokens      = json_decode(file_get_contents('app-tokens.json'),true);
+@$tokens      = json_decode(file_get_contents('app-tokens.json'),true);
 $manager     = new \OneDrive\Manager($credentials,$tokens);
 $manager->refreshToken();
 
 if (!$tokens) {
-
+    ob_clean();
     $redirectUrl = $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['SERVER_NAME'].'/callback.php';
 ?>
     <div>
@@ -17,6 +17,9 @@ if (!$tokens) {
         <span style="vertical-align: middle;"><a href="<?= $manager->getAuth()->buildOauthUrl($redirectUrl); ?>">Login with SkyDrive</a></span>
     </div>
 <?php
+    $content = ob_get_contents();
+    ob_end_clean();
+    require_once __DIR__."/index.php";
     exit();
 }
 
