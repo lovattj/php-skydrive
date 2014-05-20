@@ -4,6 +4,8 @@ namespace OneDrive\Entity;
 /**
  * Class File
  * @package OneDrive\Entity
+ * @see http://msdn.microsoft.com/en-us/library/dn631834.aspx
+ *
  * @property-read array $data - An array of File objects, if a collection of objects is returned.
  * @property-read string $id - The File object's ID.
  * @property-read array from - Info about the user who uploaded the file.
