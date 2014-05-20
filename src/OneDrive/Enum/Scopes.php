@@ -1,6 +1,11 @@
 <?php
 namespace OneDrive\Enum;
 
+/**
+ * Class Scopes
+ * @package OneDrive\Enum
+ * @see http://msdn.microsoft.com/en-us/library/dn631845.aspx
+ */
 class Scopes {
 
     //<editor-fold desc='Core'>

@@ -1,6 +1,11 @@
 <?php
 namespace OneDrive\Enum;
 
+/**
+ * Class StatusCodes
+ * @package OneDrive\Enum
+ * @see http://msdn.microsoft.com/en-us/library/dn631844.aspx
+ */
 class StatusCodes {
     /**
      * The request was successful.
