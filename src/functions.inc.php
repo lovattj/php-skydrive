@@ -150,7 +150,7 @@ class skydrive {
 	// It's also a link to the file inside SkyDrive's interface rather than directly to the file data.
 
 	function get_shared_read_link($fileid) {
-		$response = curl_get(skydrive_base_url.$fileid."/shared_read_link?access_token=".$this->access_token);
+		$response = $this->curl_get(skydrive_base_url.$fileid."/shared_read_link?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -162,7 +162,7 @@ class skydrive {
 	// Gets a shared edit (read-write) link to the item.
 
 	function get_shared_edit_link($fileid) {
-		$response = curl_get(skydrive_base_url.$fileid."/shared_edit_link?access_token=".$this->access_token);
+		$response = $this->curl_get(skydrive_base_url.$fileid."/shared_edit_link?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
