@@ -1,4 +1,5 @@
 <?php
+namespace SkyDriveSDK;
 
 /**********************************************************
 php-skydrive.
@@ -18,12 +19,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-// Define security credentials for your app.
-// You can get these when you register your app on the Live Connect Developer Center.
+if (!defined("client_id")) {
+	require_once('config.php');
+}
 
-define("client_id", "YOUR LIVE CLIENT ID");
-define("client_secret", "YOUR LIVE CLIENT SECRET");
-define("callback_uri", "YOUR CALLBACK URL");
 define("skydrive_base_url", "https://apis.live.net/v5.0/");
 define("token_store", "tokens"); // Edit path to your token store if required, see Wiki for more info.
 
