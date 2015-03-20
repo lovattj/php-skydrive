@@ -3,6 +3,6 @@
 // Define security credentials for your app.
 // You can get these when you register your app on the Live Connect Developer Center.
 
-define("client_id", "YOUR LIVE CLIENT ID");
-define("client_secret", "YOUR LIVE CLIENT SECRET");
-define("callback_uri", "YOUR CALLBACK URL");
+define("SKYDRIVE_SDK_CLIENT_ID", "YOUR LIVE CLIENT ID");
+define("SKYDRIVE_SDK_CLIENT_SECRET", "YOUR LIVE CLIENT SECRET");
+define("SKYDRIVE_SDK_CALLBACK_URI", "YOUR CALLBACK URL");

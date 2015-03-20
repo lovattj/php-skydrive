@@ -3,7 +3,7 @@
 require_once "header.inc.php";
 require_once "../src/functions.inc.php";
 
-$token = skydrive_tokenstore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
+$token = \SkyDriveSDK\skydrive_tokenstore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
 
 if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_url() to get the redirect URL.
 	echo "<div>";
@@ -16,7 +16,7 @@ if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_
 	if (empty($_POST['foldername'])) {
 		echo 'Error - no new folder name specified';
 	} else {
-		$sd = new skydrive($token);
+		$sd = new \SkyDriveSDK\skydrive($token);
 		try {
 			if (empty($_POST['currentfolderid'])) {
 				$response = $sd->create_folder(null, $_POST['foldername'], 'Description');

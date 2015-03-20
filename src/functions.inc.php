@@ -19,12 +19,12 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************/
 
-if (!defined("client_id")) {
-	require_once('config.php');
+if (!defined("SKYDRIVE_SDK_CLIENT_ID")) {
+	require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'config.php');
 }
 
-define("skydrive_base_url", "https://apis.live.net/v5.0/");
-define("token_store", "tokens"); // Edit path to your token store if required, see Wiki for more info.
+define("SKYDRIVE_SDK_BASE_URL", "https://apis.live.net/v5.0/");
+define("SKYDRIVE_SDK_TOKEN_STORE", "tokens"); // Edit path to your token store if required, see Wiki for more info.
 
 class skydrive {
 
@@ -42,9 +42,9 @@ class skydrive {
 
 	public function get_folder($folderid, $sort_by='name', $sort_order='ascending', $limit='255', $offset='0') {
 		if ($folderid === null) {
-			$response = $this->curl_get(skydrive_base_url."me/skydrive/files?sort_by=".$sort_by."&sort_order=".$sort_order."&offset=".$offset."&limit=".$limit."&access_token=".$this->access_token);
+			$response = $this->curl_get(SKYDRIVE_SDK_BASE_URL."me/skydrive/files?sort_by=".$sort_by."&sort_order=".$sort_order."&offset=".$offset."&limit=".$limit."&access_token=".$this->access_token);
 		} else {
-			$response = $this->curl_get(skydrive_base_url.$folderid."/files?sort_by=".$sort_by."&sort_order=".$sort_order."&offset=".$offset."&limit=".$limit."&access_token=".$this->access_token);
+			$response = $this->curl_get(SKYDRIVE_SDK_BASE_URL.$folderid."/files?sort_by=".$sort_by."&sort_order=".$sort_order."&offset=".$offset."&limit=".$limit."&access_token=".$this->access_token);
 		}
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
@@ -85,7 +85,7 @@ class skydrive {
 	// Returns an array containing your total quota and quota available in bytes.
 
 	function get_quota() {
-		$response = $this->curl_get(skydrive_base_url."me/skydrive/quota?access_token=".$this->access_token);
+		$response = $this->curl_get(SKYDRIVE_SDK_BASE_URL."me/skydrive/quota?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -101,9 +101,9 @@ class skydrive {
 	public function get_folder_properties($folderid) {
 		$arraytoreturn = Array();
 		if ($folderid === null) {
-			$response = $this->curl_get(skydrive_base_url."/me/skydrive?access_token=".$this->access_token);
+			$response = $this->curl_get(SKYDRIVE_SDK_BASE_URL."/me/skydrive?access_token=".$this->access_token);
 		} else {
-			$response = $this->curl_get(skydrive_base_url.$folderid."?access_token=".$this->access_token);
+			$response = $this->curl_get(SKYDRIVE_SDK_BASE_URL.$folderid."?access_token=".$this->access_token);
 		}
 		
 		if (@array_key_exists('error', $response)) {
@@ -119,7 +119,7 @@ class skydrive {
 	// Returns an array of file properties.
 
 	public function get_file_properties($fileid) {
-		$response = $this->curl_get(skydrive_base_url.$fileid."?access_token=".$this->access_token);
+		$response = $this->curl_get(SKYDRIVE_SDK_BASE_URL.$fileid."?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -149,7 +149,7 @@ class skydrive {
 	// It's also a link to the file inside SkyDrive's interface rather than directly to the file data.
 
 	function get_shared_read_link($fileid) {
-		$response = curl_get(skydrive_base_url.$fileid."/shared_read_link?access_token=".$this->access_token);
+		$response = curl_get(SKYDRIVE_SDK_BASE_URL.$fileid."/shared_read_link?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -161,7 +161,7 @@ class skydrive {
 	// Gets a shared edit (read-write) link to the item.
 
 	function get_shared_edit_link($fileid) {
-		$response = curl_get(skydrive_base_url.$fileid."/shared_edit_link?access_token=".$this->access_token);
+		$response = curl_get(SKYDRIVE_SDK_BASE_URL.$fileid."/shared_edit_link?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -173,7 +173,7 @@ class skydrive {
 	// Deletes an object.
 
 	function delete_object($fileid) {
-		$response = curl_delete(skydrive_base_url.$fileid."?access_token=".$this->access_token);
+		$response = curl_delete(SKYDRIVE_SDK_BASE_URL.$fileid."?access_token=".$this->access_token);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
 			exit;
@@ -189,7 +189,7 @@ class skydrive {
 	
 	public function download($fileid) {
 		$props = $this->get_file_properties($fileid);
-		$response = $this->curl_get(skydrive_base_url.$fileid."/content?access_token=".$this->access_token, "false", "HTTP/1.1 302 Found");
+		$response = $this->curl_get(SKYDRIVE_SDK_BASE_URL.$fileid."/content?access_token=".$this->access_token, "false", "HTTP/1.1 302 Found");
 		$arraytoreturn = Array();
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
@@ -206,7 +206,7 @@ class skydrive {
 	// Also use this function for modifying files, it will overwrite a currently existing file.
 
 	function put_file($folderid, $filename) {
-		$r2s = skydrive_base_url.$folderid."/files/".basename($filename)."?access_token=".$this->access_token;
+		$r2s = SKYDRIVE_SDK_BASE_URL.$folderid."/files/".basename($filename)."?access_token=".$this->access_token;
 		$response = $this->curl_put($r2s, $filename);
 		if (@array_key_exists('error', $response)) {
 			throw new Exception($response['error']." - ".$response['description']);
@@ -225,7 +225,7 @@ class skydrive {
 	 * @param string $filename - target filename after upload
 	 */
 	function put_file_from_url($sourceUrl, $folderId, $filename){
-		$r2s = skydrive_base_url.$folderId."/files/".$filename."?access_token=".$this->access_token;
+		$r2s = SKYDRIVE_SDK_BASE_URL.$folderId."/files/".$filename."?access_token=".$this->access_token;
 		
 		$chunkSizeBytes = 1 * 1024 * 1024; //1MB
 		
@@ -265,9 +265,9 @@ class skydrive {
 	
 	function create_folder($folderid, $foldername, $description="") {
 		if ($folderid===null) {
-			$r2s = skydrive_base_url."me/skydrive";
+			$r2s = SKYDRIVE_SDK_BASE_URL."me/skydrive";
 		} else {
-			$r2s = skydrive_base_url.$folderid;
+			$r2s = SKYDRIVE_SDK_BASE_URL.$folderid;
 		}
 		$arraytosend = array('name' => $foldername, 'description' => $description);	
 		$response = $this->curl_post($r2s, $arraytosend, $this->access_token);
@@ -399,7 +399,7 @@ class skydrive_auth {
 	// passed onto get_oauth_token to get a valid oAuth token.
 
 	public static function build_oauth_url() {
-		$response = "https://login.live.com/oauth20_authorize.srf?client_id=".client_id."&scope=wl.signin%20wl.offline_access%20wl.skydrive_update%20wl.basic&response_type=code&redirect_uri=".urlencode(callback_uri);
+		$response = "https://login.live.com/oauth20_authorize.srf?client_id=".SKYDRIVE_SDK_CLIENT_ID."&scope=wl.signin%20wl.offline_access%20wl.skydrive_update%20wl.basic&response_type=code&redirect_uri=".urlencode(SKYDRIVE_SDK_CALLBACK_URI);
 		return $response;
 	}
 
@@ -423,7 +423,7 @@ class skydrive_auth {
 			curl_setopt($ch, CURLOPT_POST, TRUE);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);		
 
-			$data = "client_id=".client_id."&redirect_uri=".urlencode(callback_uri)."&client_secret=".urlencode(client_secret)."&code=".$auth."&grant_type=authorization_code";	
+			$data = "client_id=".SKYDRIVE_SDK_CLIENT_ID."&redirect_uri=".urlencode(SKYDRIVE_SDK_CALLBACK_URI)."&client_secret=".urlencode(SKYDRIVE_SDK_CLIENT_SECRET)."&code=".$auth."&grant_type=authorization_code";
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 			$output = curl_exec($ch);
 		} catch (Exception $e) {
@@ -454,7 +454,7 @@ class skydrive_auth {
 			curl_setopt($ch, CURLOPT_POST, TRUE);
 			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);		
 
-			$data = "client_id=".client_id."&redirect_uri=".urlencode(callback_uri)."&client_secret=".urlencode(client_secret)."&refresh_token=".$refresh."&grant_type=refresh_token";	
+			$data = "client_id=".SKYDRIVE_SDK_CLIENT_ID."&redirect_uri=".urlencode(SKYDRIVE_SDK_CALLBACK_URI)."&client_secret=".urlencode(SKYDRIVE_SDK_CLIENT_SECRET)."&refresh_token=".$refresh."&grant_type=refresh_token";
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 			$output = curl_exec($ch);
 		} catch (Exception $e) {
@@ -513,14 +513,14 @@ class skydrive_tokenstore {
 	// For more information, see the Wiki on GitHub.
 	
 	public static function get_tokens_from_store() {
-		$response = json_decode(file_get_contents(token_store), TRUE);
+		$response = json_decode(file_get_contents(SKYDRIVE_SDK_TOKEN_STORE), TRUE);
 		return $response;
 	}
 	
 	public static function save_tokens_to_store($tokens) {
 		$tokentosave = Array();
 		$tokentosave = Array('access_token' => $tokens['access_token'], 'refresh_token' => $tokens['refresh_token'], 'access_token_expires' => (time()+(int)$tokens['expires_in']));
-		if (file_put_contents(token_store, json_encode($tokentosave))) {
+		if (file_put_contents(SKYDRIVE_SDK_TOKEN_STORE, json_encode($tokentosave))) {
 			return true;
 		} else {
 			return false;
@@ -528,7 +528,7 @@ class skydrive_tokenstore {
 	}
 	
 	public static function destroy_tokens_in_store() {
-		if (file_put_contents(token_store, "loggedout")) {
+		if (file_put_contents(SKYDRIVE_SDK_TOKEN_STORE, "loggedout")) {
 			return true;
 		} else {
 			return false;

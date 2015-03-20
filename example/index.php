@@ -10,17 +10,17 @@ require_once "header.inc.php";
 
 // Try and get a valid access_token from the token store.
 
-$token = skydrive_tokenstore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
+$token = \SkyDriveSDK\skydrive_tokenstore::acquire_token(); // Call this function to grab a current access_token, or false if none is available.
 
 if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_url() to get the redirect URL.
 	echo "<div>";
 	echo "<img src='statics/key-icon.png' width='32px' style='vertical-align: middle;'>&nbsp";
-	echo "<span style='vertical-align: middle;'><a href='".skydrive_auth::build_oauth_url()."'>Login with SkyDrive</a></span>";
+	echo "<span style='vertical-align: middle;'><a href='".\SkyDriveSDK\skydrive_auth::build_oauth_url()."'>Login with SkyDrive</a></span>";
 	echo "</div>";
 	
 } else { // Otherwise, if we have a token, use it to create an object and start calling methods to build our page.
 	
-	$sd2 = new skydrive($token);
+	$sd2 = new \SkyDriveSDK\skydrive($token);
 	$quotaresp = $sd2->get_quota();
 	
 	echo "Quota remaining: ".round((((int)$quotaresp['available']/1024)/1024))." Mbytes.</p>";
@@ -30,7 +30,7 @@ if (!$token) { // If no token, prompt to login. Call skydrive_auth::build_oauth_
 	
 	// First, time to create a new OneDrive object.
 	
-	$sd = new skydrive($token);
+	$sd = new \SkyDriveSDK\skydrive($token);
 	
 	// Time to prepare and make the request to get the list of files.
 	

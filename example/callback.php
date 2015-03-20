@@ -6,8 +6,8 @@
 // Then this example page calls "skydrive_tokenstore::save_tokens_to_store" to save the tokens to a file (although you can handle them how you want).
 
 require_once "../src/functions.inc.php";
-$response = skydrive_auth::get_oauth_token($_GET['code']);
-if (skydrive_tokenstore::save_tokens_to_store($response)) {
+$response = \SkyDriveSDK\skydrive_auth::get_oauth_token($_GET['code']);
+if (\SkyDriveSDK\skydrive_tokenstore::save_tokens_to_store($response)) {
 	header("Location: index.php");
 } else {
 	echo "error";
