@@ -1,11 +1,11 @@
 <?php
 require_once "../src/functions.inc.php";
-$token = skydrive_tokenstore::acquire_token();
+$token = \SkyDriveSDK\skydrive_tokenstore::acquire_token();
 
 if (!$token) {
 	echo "Error";
 } else {
-	$sd = new skydrive($token);
+	$sd = new \SkyDriveSDK\skydrive($token);
 	try {
 		$response = $sd->download($_GET['fileid']);
 		ob_end_clean();  

@@ -2,7 +2,7 @@
 @session_start();
 require_once "header.inc.php";
 require_once "../src/functions.inc.php";
-$token = skydrive_tokenstore::acquire_token();
+$token = \SkyDriveSDK\skydrive_tokenstore::acquire_token();
 
 if (!$token) {
 	echo "<div>";
@@ -11,7 +11,7 @@ if (!$token) {
 	echo "</div>";
 } else {
 
-	$sd = new skydrive($token);
+	$sd = new \SkyDriveSDK\skydrive($token);
 	try {
 		$response = $sd->get_file_properties($_GET['fileid']);
 		echo "<h3>".$response['name']."</h3>";
